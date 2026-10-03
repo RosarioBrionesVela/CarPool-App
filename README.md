@@ -65,4 +65,4 @@ The team will use Notion to organize tasks and Discord to communicate.
 ## 10. Project Goal
 
 To create a simple prototype of a carpooling application and demonstrate how digital tools support collaboration, innovation and teamwork.
-prueba
+Prueba si valida
