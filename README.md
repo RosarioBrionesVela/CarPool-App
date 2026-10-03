@@ -48,11 +48,21 @@ Our vision is to create an accessible and safe platform that makes shared transp
 * Ask a teammate to review the changes.
 * Make corrections if necessary.
 * Merge the changes after approval.
+  
+## 8. Branch Rules
 
-## 8. Communication
+- The main branch contains the approved project files.
+- Each member must create a separate branch for their tasks.
+- Branch names must describe the work.
+- Members must use Pull Requests to submit changes.
+- Another team member must review the changes before merging.
+- Only approved changes can be added to the main branch.
+  
+## 9. Communication
 
 The team will use Notion to organize tasks and Discord to communicate.
 
-## 9. Project Goal
+## 10. Project Goal
 
 To create a simple prototype of a carpooling application and demonstrate how digital tools support collaboration, innovation and teamwork.
+Prueba si valida
