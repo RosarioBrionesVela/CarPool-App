@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BottomNavigation from '@/components/BottomNavigation';
 
 const PURPLE = '#8B4CF6';
 const NAVY = '#192B68';
@@ -291,6 +292,9 @@ export default function ProfileScreen() {
 
         <View style={styles.bottomSpace} />
       </ScrollView>
+
+      {/* Componente de Navegación */}
+      <BottomNavigation />
     </SafeAreaView>
   );
 }

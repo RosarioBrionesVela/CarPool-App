@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BottomNavigation from '@/components/BottomNavigation';
 
 const NAVY = '#17265F';
 const BLUE = '#7897BD';
@@ -430,69 +431,8 @@ export default function TripsScreen() {
         )}
       </ScrollView>
 
-      <View style={styles.bottomNav}>
-        <Pressable
-          style={styles.navItem}
-          onPress={() => router.replace('/home')}
-        >
-          <Ionicons
-            name="home"
-            size={23}
-            color={BLUE}
-          />
-          <Text style={styles.navLabel}>Inicio</Text>
-        </Pressable>
-
-        <Pressable
-          style={styles.navItem}
-          onPress={irAViajes}
-        >
-          <Ionicons
-            name="location-outline"
-            size={23}
-            color={NAVY}
-          />
-          <Text style={[styles.navLabel, styles.selectedNavLabel]}>
-            Viajes
-          </Text>
-        </Pressable>
-
-        <Pressable
-          style={styles.navItem}
-          onPress={() => router.push('/publish')}
-        >
-          <Ionicons
-            name="clipboard-outline"
-            size={23}
-            color={BLUE}
-          />
-          <Text style={styles.navLabel}>Publicar</Text>
-        </Pressable>
-
-        <Pressable
-          style={styles.navItem}
-          onPress={() => router.push('/messages')}
-        >
-          <Ionicons
-            name="chatbubble-outline"
-            size={23}
-            color={BLUE}
-          />
-          <Text style={styles.navLabel}>Mensajes</Text>
-        </Pressable>
-
-        <Pressable
-          style={styles.navItem}
-          onPress={() => router.push('/profile')}
-        >
-          <Ionicons
-            name="person-outline"
-            size={23}
-            color={BLUE}
-          />
-          <Text style={styles.navLabel}>Perfil</Text>
-        </Pressable>
-      </View>
+      {/* Navegación inferior */}
+      <BottomNavigation />
     </SafeAreaView>
   );
 }
@@ -731,29 +671,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
   },
-  bottomNav: {
-    minHeight: 68,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#E8EEF4',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
-  },
-  navLabel: {
-    color: BLUE,
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  selectedNavLabel: {
-    color: NAVY,
-    fontWeight: '800',
-  },
+  
 });

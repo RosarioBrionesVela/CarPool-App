@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BottomNavigation from '@/components/BottomNavigation';
 
 const PURPLE = '#8B4CF6';
 const NAVY = '#192B68';
@@ -281,51 +282,9 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      {/* Navegación inferior */}
-      <View style={styles.bottomNavigation}>
-        <Pressable style={styles.navItem} onPress={() => {}}>
-          <Ionicons name="home" size={24} color={NAVY} />
-          <Text style={[styles.navLabel, styles.activeNavLabel]}>
-            Inicio
-          </Text>
-        </Pressable>
+      {/* Navegación inferior - ahora se utiliza un componente para la navegación*/}
+      <BottomNavigation />
 
-        <Pressable style={styles.navItem} onPress={buscarViajes}>
-          <Ionicons
-            name="location-outline"
-            size={24}
-            color={MUTED}
-          />
-          <Text style={styles.navLabel}>Viajes</Text>
-        </Pressable>
-
-        <Pressable style={styles.navItem} onPress={publicarViaje}>
-          <Ionicons
-            name="add-circle-outline"
-            size={25}
-            color={MUTED}
-          />
-          <Text style={styles.navLabel}>Publicar</Text>
-        </Pressable>
-
-        <Pressable style={styles.navItem} onPress={abrirMensajes}>
-          <Ionicons
-            name="chatbubble-outline"
-            size={24}
-            color={MUTED}
-          />
-          <Text style={styles.navLabel}>Mensajes</Text>
-        </Pressable>
-
-        <Pressable style={styles.navItem} onPress={abrirPerfil}>
-          <Ionicons
-            name="person-outline"
-            size={24}
-            color={MUTED}
-          />
-          <Text style={styles.navLabel}>Perfil</Text>
-        </Pressable>
-      </View>
     </SafeAreaView>
   );
 }
@@ -577,37 +536,6 @@ const styles = StyleSheet.create({
     color: MUTED,
     fontSize: 12,
     marginTop: 4,
-  },
-
-  bottomNavigation: {
-    minHeight: 67,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#EDF0F7',
-    paddingHorizontal: 4,
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-  },
-
-  navLabel: {
-    color: MUTED,
-    fontSize: 10,
-    fontWeight: '600',
-  },
-
-  activeNavLabel: {
-    color: NAVY,
-    fontWeight: '800',
   },
 
   pressed: {

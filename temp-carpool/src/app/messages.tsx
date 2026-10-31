@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BottomNavigation from '@/components/BottomNavigation';
 
 const NAVY = '#192B68';
 const PURPLE = '#8B4CF6';
@@ -371,15 +372,9 @@ export default function MessagesScreen() {
         }
       />
 
-      <View style={styles.bottomArea}>
-        <Pressable
-          style={styles.backHomeButton}
-          onPress={() => router.push('/home')}
-        >
-          <Ionicons name="home-outline" size={19} color="#FFFFFF" />
-          <Text style={styles.backHomeText}>Volver al inicio</Text>
-        </Pressable>
-      </View>
+      {/* Componente de Navegación */}
+      <BottomNavigation />
+
     </SafeAreaView>
   );
 }
