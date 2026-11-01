@@ -36,10 +36,7 @@ export default function DetailScreen() {
           text: 'Reservar',
           onPress: () => {
             setReservado(true);
-            Alert.alert(
-              '¡Solicitud realizada!',
-              'Tu solicitud de reserva es una demostración. Todavía no se guarda en una base de datos.',
-            );
+            router.push('/confirmation');
           },
         },
       ],
