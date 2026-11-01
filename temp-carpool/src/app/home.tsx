@@ -48,10 +48,7 @@ export default function HomeScreen() {
   };
 
   const abrirNotificaciones = () => {
-    Alert.alert(
-      "Notificaciones",
-      "Aquí aparecerán tus avisos de viajes y reservaciones.",
-    );
+    router.push("/notifications" as any);
   };
 
   return (
