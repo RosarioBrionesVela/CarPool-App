@@ -11,6 +11,7 @@ export default function RootLayout() {
       <Stack.Screen name="publish" />
       <Stack.Screen name="messages" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="myTrips" />
     </Stack>
   );
 }

@@ -1,7 +1,7 @@
-import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import {
   Alert,
   Pressable,
@@ -9,48 +9,48 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import BottomNavigation from '@/components/BottomNavigation';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import BottomNavigation from "@/components/BottomNavigation";
 
-const PURPLE = '#8B4CF6';
-const NAVY = '#192B68';
-const MUTED = '#7890B5';
-const GREEN = '#00A884';
-const BACKGROUND = '#F7F8FF';
+const PURPLE = "#8B4CF6";
+const NAVY = "#192B68";
+const MUTED = "#7890B5";
+const GREEN = "#00A884";
+const BACKGROUND = "#F7F8FF";
 
 export default function HomeScreen() {
   const router = useRouter();
 
-  const [origen] = useState('Aguascalientes, Ags.');
-  const [destino] = useState('Querétaro, Qro.');
-  const [fecha] = useState('Sáb, 31 Oct 2026');
-  const [hora] = useState('8:00 a.m.');
+  const [origen] = useState("Aguascalientes, Ags.");
+  const [destino] = useState("Querétaro, Qro.");
+  const [fecha] = useState("Sáb, 31 Oct 2026");
+  const [hora] = useState("8:00 a.m.");
 
   const buscarViajes = () => {
-    router.push('/trips' as any);
+    router.push("/trips" as any);
   };
 
   const publicarViaje = () => {
-    router.push('/publish' as any);
+    router.push("/publish" as any);
   };
 
   const abrirMisViajes = () => {
-    router.push('/trips' as any);
+    router.push("/myTrips" as any);
   };
 
   const abrirMensajes = () => {
-    router.push('/messages' as any);
+    router.push("/messages" as any);
   };
 
   const abrirPerfil = () => {
-    router.push('/profile' as any);
+    router.push("/profile" as any);
   };
 
   const abrirNotificaciones = () => {
     Alert.alert(
-      'Notificaciones',
-      'Aquí aparecerán tus avisos de viajes y reservaciones.',
+      "Notificaciones",
+      "Aquí aparecerán tus avisos de viajes y reservaciones.",
     );
   };
 
@@ -85,11 +85,7 @@ export default function HomeScreen() {
             ]}
             accessibilityLabel="Abrir notificaciones"
           >
-            <Ionicons
-              name="notifications-outline"
-              size={25}
-              color={NAVY}
-            />
+            <Ionicons name="notifications-outline" size={25} color={NAVY} />
             <View style={styles.notificationDot} />
           </Pressable>
         </View>
@@ -99,11 +95,7 @@ export default function HomeScreen() {
           <View style={styles.sectionHeading}>
             <Text style={styles.sectionTitle}>¿A dónde vas?</Text>
 
-            <Ionicons
-              name="arrow-forward-outline"
-              size={23}
-              color={NAVY}
-            />
+            <Ionicons name="arrow-forward-outline" size={23} color={NAVY} />
           </View>
 
           {/* Origen */}
@@ -111,27 +103,19 @@ export default function HomeScreen() {
             style={styles.locationField}
             onPress={() =>
               Alert.alert(
-                'Origen',
-                'Después agregaremos la selección de ubicación.',
+                "Origen",
+                "Después agregaremos la selección de ubicación.",
               )
             }
           >
-            <Ionicons
-              name="location-outline"
-              size={23}
-              color={PURPLE}
-            />
+            <Ionicons name="location-outline" size={23} color={PURPLE} />
 
             <View style={styles.locationTextContainer}>
               <Text style={styles.fieldCaption}>Origen</Text>
               <Text style={styles.fieldValue}>{origen}</Text>
             </View>
 
-            <Ionicons
-              name="chevron-forward"
-              size={18}
-              color={MUTED}
-            />
+            <Ionicons name="chevron-forward" size={18} color={MUTED} />
           </Pressable>
 
           {/* Destino */}
@@ -139,27 +123,19 @@ export default function HomeScreen() {
             style={styles.locationField}
             onPress={() =>
               Alert.alert(
-                'Destino',
-                'Después agregaremos la selección de destino.',
+                "Destino",
+                "Después agregaremos la selección de destino.",
               )
             }
           >
-            <Ionicons
-              name="location-outline"
-              size={23}
-              color={PURPLE}
-            />
+            <Ionicons name="location-outline" size={23} color={PURPLE} />
 
             <View style={styles.locationTextContainer}>
               <Text style={styles.fieldCaption}>Destino</Text>
               <Text style={styles.fieldValue}>{destino}</Text>
             </View>
 
-            <Ionicons
-              name="chevron-forward"
-              size={18}
-              color={MUTED}
-            />
+            <Ionicons name="chevron-forward" size={18} color={MUTED} />
           </Pressable>
 
           {/* Fecha y hora */}
@@ -168,16 +144,12 @@ export default function HomeScreen() {
               style={styles.dateField}
               onPress={() =>
                 Alert.alert(
-                  'Fecha del viaje',
-                  'Después agregaremos el calendario para seleccionar la fecha.',
+                  "Fecha del viaje",
+                  "Después agregaremos el calendario para seleccionar la fecha.",
                 )
               }
             >
-              <Ionicons
-                name="calendar-outline"
-                size={22}
-                color={PURPLE}
-              />
+              <Ionicons name="calendar-outline" size={22} color={PURPLE} />
 
               <View style={styles.dateTimeText}>
                 <Text style={styles.fieldCaption}>Fecha</Text>
@@ -189,16 +161,12 @@ export default function HomeScreen() {
               style={styles.timeField}
               onPress={() =>
                 Alert.alert(
-                  'Hora del viaje',
-                  'Después agregaremos el selector de hora.',
+                  "Hora del viaje",
+                  "Después agregaremos el selector de hora.",
                 )
               }
             >
-              <Ionicons
-                name="time-outline"
-                size={22}
-                color={PURPLE}
-              />
+              <Ionicons name="time-outline" size={22} color={PURPLE} />
 
               <View style={styles.dateTimeText}>
                 <Text style={styles.fieldCaption}>Hora</Text>
@@ -230,16 +198,10 @@ export default function HomeScreen() {
             ]}
             onPress={publicarViaje}
           >
-            <Ionicons
-              name="car-sport-outline"
-              size={36}
-              color="#FFFFFF"
-            />
+            <Ionicons name="car-sport-outline" size={36} color="#FFFFFF" />
 
             <Text style={styles.publishTitle}>Publicar viaje</Text>
-            <Text style={styles.publishSubtitle}>
-              ¿Llevas a alguien?
-            </Text>
+            <Text style={styles.publishSubtitle}>¿Llevas a alguien?</Text>
           </Pressable>
 
           <Pressable
@@ -250,31 +212,19 @@ export default function HomeScreen() {
             ]}
             onPress={abrirMisViajes}
           >
-            <Ionicons
-              name="clipboard-outline"
-              size={36}
-              color={PURPLE}
-            />
+            <Ionicons name="clipboard-outline" size={36} color={PURPLE} />
 
             <Text style={styles.myTripsTitle}>Mis viajes</Text>
-            <Text style={styles.myTripsSubtitle}>
-              Tus viajes y reservas
-            </Text>
+            <Text style={styles.myTripsSubtitle}>Tus viajes y reservas</Text>
           </Pressable>
         </View>
 
         {/* Información inferior */}
         <View style={styles.infoCard}>
-          <Ionicons
-            name="shield-checkmark-outline"
-            size={24}
-            color={GREEN}
-          />
+          <Ionicons name="shield-checkmark-outline" size={24} color={GREEN} />
 
           <View style={styles.infoTextContainer}>
-            <Text style={styles.infoTitle}>
-              Viaja acompañado
-            </Text>
+            <Text style={styles.infoTitle}>Viaja acompañado</Text>
             <Text style={styles.infoDescription}>
               Comparte el camino y ahorra juntos.
             </Text>
@@ -284,7 +234,6 @@ export default function HomeScreen() {
 
       {/* Navegación inferior - ahora se utiliza un componente para la navegación*/}
       <BottomNavigation />
-
     </SafeAreaView>
   );
 }
@@ -302,15 +251,15 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 18,
   },
 
   userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
 
@@ -319,8 +268,8 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     backgroundColor: PURPLE,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 11,
   },
 
@@ -330,7 +279,7 @@ const styles = StyleSheet.create({
 
   greeting: {
     fontSize: 21,
-    fontWeight: '800',
+    fontWeight: "800",
     color: NAVY,
   },
 
@@ -344,14 +293,14 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 23,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    position: 'relative',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    position: "relative",
   },
 
   notificationDot: {
-    position: 'absolute',
+    position: "absolute",
     top: 8,
     right: 9,
     width: 8,
@@ -361,16 +310,16 @@ const styles = StyleSheet.create({
   },
 
   searchCard: {
-    backgroundColor: '#F9EAFB',
+    backgroundColor: "#F9EAFB",
     borderRadius: 23,
     padding: 13,
     marginBottom: 14,
   },
 
   sectionHeading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 5,
     paddingBottom: 12,
   },
@@ -378,17 +327,17 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: NAVY,
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: "800",
   },
 
   locationField: {
     minHeight: 58,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 15,
     paddingHorizontal: 12,
     paddingVertical: 9,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
 
@@ -404,13 +353,13 @@ const styles = StyleSheet.create({
   },
 
   fieldValue: {
-    color: '#718CB5',
+    color: "#718CB5",
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 
   dateTimeRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
     marginTop: 1,
     marginBottom: 10,
@@ -419,23 +368,23 @@ const styles = StyleSheet.create({
   dateField: {
     flex: 1.2,
     minHeight: 58,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 15,
     paddingHorizontal: 10,
     paddingVertical: 9,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   timeField: {
     flex: 0.9,
     minHeight: 58,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 15,
     paddingHorizontal: 10,
     paddingVertical: 9,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   dateTimeText: {
@@ -447,21 +396,21 @@ const styles = StyleSheet.create({
     minHeight: 48,
     backgroundColor: PURPLE,
     borderRadius: 26,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 9,
     marginTop: 1,
   },
 
   searchButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: "800",
   },
 
   quickActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
     marginBottom: 15,
   },
@@ -472,8 +421,8 @@ const styles = StyleSheet.create({
     borderRadius: 23,
     paddingHorizontal: 9,
     paddingVertical: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   publishCard: {
@@ -481,43 +430,43 @@ const styles = StyleSheet.create({
   },
 
   myTripsCard: {
-    backgroundColor: '#F0DDFB',
+    backgroundColor: "#F0DDFB",
   },
 
   publishTitle: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: "800",
     marginTop: 8,
   },
 
   publishSubtitle: {
-    color: '#F4EAFE',
+    color: "#F4EAFE",
     fontSize: 11,
     marginTop: 5,
-    textAlign: 'center',
+    textAlign: "center",
   },
 
   myTripsTitle: {
-    color: '#5630B9',
+    color: "#5630B9",
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: "800",
     marginTop: 8,
   },
 
   myTripsSubtitle: {
-    color: '#866BB6',
+    color: "#866BB6",
     fontSize: 11,
     marginTop: 5,
-    textAlign: 'center',
+    textAlign: "center",
   },
 
   infoCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 17,
     padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
 
@@ -529,7 +478,7 @@ const styles = StyleSheet.create({
   infoTitle: {
     color: NAVY,
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: "800",
   },
 
   infoDescription: {
