@@ -1,7 +1,7 @@
-import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -11,13 +11,13 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import BottomNavigation from '@/components/BottomNavigation';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import BottomNavigation from "@/components/BottomNavigation";
 
-const NAVY = '#192B68';
-const PURPLE = '#8B4CF6';
-const MUTED = '#7184A5';
+const NAVY = "#192B68";
+const PURPLE = "#8B4CF6";
+const MUTED = "#7184A5";
 
 type Conversation = {
   id: string;
@@ -31,30 +31,30 @@ type Conversation = {
 
 const initialConversations: Conversation[] = [
   {
-    id: '1',
-    name: 'Carlos R.',
-    message: '¡Perfecto! Nos vemos en el punto de salida.',
-    time: '10:42',
-    icon: 'person',
-    color: '#E8DEFF',
+    id: "1",
+    name: "Carlos R.",
+    message: "¡Perfecto! Nos vemos en el punto de salida.",
+    time: "10:42",
+    icon: "person",
+    color: "#E8DEFF",
     unread: 2,
   },
   {
-    id: '2',
-    name: 'Mariana L.',
-    message: '¿A qué hora salimos?',
-    time: 'Ayer',
-    icon: 'person',
-    color: '#DDF7EE',
+    id: "2",
+    name: "Mariana L.",
+    message: "¿A qué hora salimos?",
+    time: "Ayer",
+    icon: "person",
+    color: "#DDF7EE",
     unread: 1,
   },
   {
-    id: '3',
-    name: 'Daniel M.',
-    message: 'Gracias por confirmar.',
-    time: 'Lun',
-    icon: 'person',
-    color: '#FFE9D7',
+    id: "3",
+    name: "Daniel M.",
+    message: "Gracias por confirmar.",
+    time: "Lun",
+    icon: "person",
+    color: "#FFE9D7",
     unread: 0,
   },
 ];
@@ -72,44 +72,44 @@ export default function MessagesScreen() {
   const [conversations, setConversations] =
     useState<Conversation[]>(initialConversations);
   const [selected, setSelected] = useState<Conversation | null>(null);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState("");
   const [chatMessages, setChatMessages] = useState<
     Record<string, ChatMessage[]>
   >({
-    '1': [
+    "1": [
       {
-        id: '1',
-        text: 'Hola, ¿todo bien? ¿Nos vemos en el punto de salida?',
+        id: "1",
+        text: "Hola, ¿todo bien? ¿Nos vemos en el punto de salida?",
         mine: false,
-        time: '10:38',
+        time: "10:38",
       },
       {
-        id: '2',
-        text: '¡Sí, perfecto! Nos vemos ahí.',
+        id: "2",
+        text: "¡Sí, perfecto! Nos vemos ahí.",
         mine: true,
-        time: '10:40',
+        time: "10:40",
       },
       {
-        id: '3',
-        text: '¡Perfecto! Nos vemos en el punto de salida.',
+        id: "3",
+        text: "¡Perfecto! Nos vemos en el punto de salida.",
         mine: false,
-        time: '10:42',
-      },
-    ],
-    '2': [
-      {
-        id: '1',
-        text: 'Hola, ¿a qué hora salimos?',
-        mine: false,
-        time: 'Ayer',
+        time: "10:42",
       },
     ],
-    '3': [
+    "2": [
       {
-        id: '1',
-        text: 'Gracias por confirmar.',
+        id: "1",
+        text: "Hola, ¿a qué hora salimos?",
         mine: false,
-        time: 'Lun',
+        time: "Ayer",
+      },
+    ],
+    "3": [
+      {
+        id: "1",
+        text: "Gracias por confirmar.",
+        mine: false,
+        time: "Lun",
       },
     ],
   });
@@ -122,9 +122,9 @@ export default function MessagesScreen() {
       id: `${Date.now()}`,
       text: texto,
       mine: true,
-      time: new Date().toLocaleTimeString('es-MX', {
-        hour: '2-digit',
-        minute: '2-digit',
+      time: new Date().toLocaleTimeString("es-MX", {
+        hour: "2-digit",
+        minute: "2-digit",
       }),
     };
 
@@ -136,12 +136,12 @@ export default function MessagesScreen() {
     setConversations((prev) =>
       prev.map((conversation) =>
         conversation.id === selected.id
-          ? { ...conversation, message: texto, time: 'Ahora', unread: 0 }
+          ? { ...conversation, message: texto, time: "Ahora", unread: 0 }
           : conversation,
       ),
     );
 
-    setDraft('');
+    setDraft("");
   };
 
   if (selected) {
@@ -153,15 +153,15 @@ export default function MessagesScreen() {
 
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 8 : 0}
         >
           <View style={styles.chatHeader}>
             <Pressable
               style={styles.backButton}
               onPress={() => {
                 setSelected(null);
-                setDraft('');
+                setDraft("");
               }}
             >
               <Ionicons name="arrow-back" size={24} color={NAVY} />
@@ -317,7 +317,6 @@ export default function MessagesScreen() {
               pressed && styles.pressed,
             ]}
             onPress={() => {
-              setSelected(item);
               setConversations((prev) =>
                 prev.map((conversation) =>
                   conversation.id === item.id
@@ -325,19 +324,11 @@ export default function MessagesScreen() {
                     : conversation,
                 ),
               );
+              router.push({ pathname: "/chat", params: { nombre: item.name } });
             }}
           >
-            <View
-              style={[
-                styles.avatar,
-                { backgroundColor: item.color },
-              ]}
-            >
-              <Ionicons
-                name={item.icon as 'person'}
-                size={27}
-                color={PURPLE}
-              />
+            <View style={[styles.avatar, { backgroundColor: item.color }]}>
+              <Ionicons name={item.icon as "person"} size={27} color={PURPLE} />
             </View>
 
             <View style={styles.conversationInfo}>
@@ -374,7 +365,6 @@ export default function MessagesScreen() {
 
       {/* Componente de Navegación */}
       <BottomNavigation />
-
     </SafeAreaView>
   );
 }
@@ -382,15 +372,15 @@ export default function MessagesScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F7F8FF',
+    backgroundColor: "#F7F8FF",
   },
   flex: {
     flex: 1,
   },
   listHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 22,
     paddingTop: 15,
     paddingBottom: 20,
@@ -398,7 +388,7 @@ const styles = StyleSheet.create({
   title: {
     color: NAVY,
     fontSize: 27,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   subtitle: {
     color: MUTED,
@@ -409,16 +399,16 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: '#EFE7FF',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#EFE7FF",
+    alignItems: "center",
+    justifyContent: "center",
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: '#E4E8F2',
+    borderColor: "#E4E8F2",
     borderRadius: 16,
     marginHorizontal: 20,
     paddingHorizontal: 14,
@@ -438,14 +428,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   conversationCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#ECEEF6',
+    borderColor: "#ECEEF6",
   },
   pressed: {
     opacity: 0.8,
@@ -454,10 +444,10 @@ const styles = StyleSheet.create({
     width: 53,
     height: 53,
     borderRadius: 27,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
-    backgroundColor: '#E8DEFF',
+    backgroundColor: "#E8DEFF",
   },
   conversationInfo: {
     flex: 1,
@@ -465,7 +455,7 @@ const styles = StyleSheet.create({
   conversationName: {
     color: NAVY,
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   lastMessage: {
     color: MUTED,
@@ -473,7 +463,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   conversationMeta: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     marginLeft: 8,
   },
   conversationTime: {
@@ -485,29 +475,29 @@ const styles = StyleSheet.create({
     height: 21,
     borderRadius: 11,
     backgroundColor: PURPLE,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 8,
   },
   unreadText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   emptyState: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: 70,
     paddingHorizontal: 25,
   },
   emptyTitle: {
     color: NAVY,
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: "800",
     marginTop: 15,
   },
   emptyText: {
     color: MUTED,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 13,
     marginTop: 7,
   },
@@ -519,29 +509,29 @@ const styles = StyleSheet.create({
     backgroundColor: PURPLE,
     minHeight: 48,
     borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     gap: 8,
   },
   backHomeText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   chatHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 15,
     paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
-    borderBottomColor: '#ECEEF6',
+    borderBottomColor: "#ECEEF6",
   },
   backButton: {
     width: 38,
     height: 42,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   chatHeaderText: {
     flex: 1,
@@ -550,7 +540,7 @@ const styles = StyleSheet.create({
   chatName: {
     color: NAVY,
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   onlineText: {
     color: MUTED,
@@ -560,21 +550,21 @@ const styles = StyleSheet.create({
   headerAction: {
     width: 35,
     height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   tripNotice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#EFE7FF',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EFE7FF",
     paddingVertical: 11,
     gap: 8,
   },
   tripNoticeText: {
     color: NAVY,
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   messageList: {
     flex: 1,
@@ -584,17 +574,17 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   messageRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 13,
   },
   myMessageRow: {
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   otherMessageRow: {
-    justifyContent: 'flex-start',
+    justifyContent: "flex-start",
   },
   messageBubble: {
-    maxWidth: '84%',
+    maxWidth: "84%",
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 11,
@@ -604,10 +594,10 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 5,
   },
   otherBubble: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderBottomLeftRadius: 5,
     borderWidth: 1,
-    borderColor: '#ECEEF6',
+    borderColor: "#ECEEF6",
   },
   messageText: {
     color: NAVY,
@@ -615,29 +605,29 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   myMessageText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   messageTime: {
     color: MUTED,
     fontSize: 10,
-    textAlign: 'right',
+    textAlign: "right",
     marginTop: 5,
   },
   myMessageTime: {
-    color: '#E9DFFF',
+    color: "#E9DFFF",
   },
   emptyChat: {
     color: MUTED,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 35,
   },
   composer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexDirection: "row",
+    alignItems: "flex-end",
     padding: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderTopWidth: 1,
-    borderTopColor: '#ECEEF6',
+    borderTopColor: "#ECEEF6",
     gap: 10,
   },
   messageInput: {
@@ -645,7 +635,7 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     minHeight: 45,
     borderRadius: 23,
-    backgroundColor: '#F4F5FB',
+    backgroundColor: "#F4F5FB",
     paddingHorizontal: 16,
     paddingVertical: 12,
     color: NAVY,
@@ -656,8 +646,8 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 23,
     backgroundColor: PURPLE,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   sendButtonDisabled: {
     opacity: 0.45,
