@@ -1,8 +1,8 @@
-import BottomNavigation from '@/components/BottomNavigation';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { ComponentRef, useRef, useState } from 'react';
+import BottomNavigation from "@/components/BottomNavigation";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { ComponentRef, useRef, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -12,16 +12,16 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const PURPLE = '#8B4CF6';
-const NAVY = '#192B68';
-const MUTED = '#7890B5';
-const BACKGROUND = '#FCFBFF';
-const BORDER = '#E9E7F3';
+const PURPLE = "#8B4CF6";
+const NAVY = "#192B68";
+const MUTED = "#7890B5";
+const BACKGROUND = "#FCFBFF";
+const BORDER = "#E9E7F3";
 
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
+type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
 type Opcion = {
   id: string;
@@ -36,36 +36,40 @@ type Perfil = {
 };
 
 const opciones: Opcion[] = [
-  { id: 'editar', icono: 'create-outline', titulo: 'Editar perfil' },
-  { id: 'direcciones', icono: 'lock-closed-outline', titulo: 'Mis direcciones' },
-  { id: 'pagos', icono: 'card-outline', titulo: 'Métodos de pago' },
-  { id: 'seguridad', icono: 'shield-checkmark-outline', titulo: 'Seguridad' },
-  { id: 'ayuda', icono: 'compass-outline', titulo: 'Ayuda y soporte' },
+  { id: "editar", icono: "create-outline", titulo: "Editar perfil" },
+  {
+    id: "direcciones",
+    icono: "lock-closed-outline",
+    titulo: "Mis direcciones",
+  },
+  { id: "pagos", icono: "card-outline", titulo: "Métodos de pago" },
+  { id: "seguridad", icono: "shield-checkmark-outline", titulo: "Seguridad" },
+  { id: "ayuda", icono: "compass-outline", titulo: "Ayuda y soporte" },
 ];
 
 const estadisticas = [
-  { valor: '4.8', etiqueta: 'Calificación' },
-  { valor: '12', etiqueta: 'Viajes' },
-  { valor: '5', etiqueta: 'Reseñas' },
+  { valor: "4.8", etiqueta: "Calificación" },
+  { valor: "12", etiqueta: "Viajes" },
+  { valor: "5", etiqueta: "Reseñas" },
 ];
 
 const proximamente: Record<string, { titulo: string; mensaje: string }> = {
   direcciones: {
-    titulo: 'Mis direcciones',
-    mensaje: 'Aquí podrás guardar tus lugares frecuentes de salida y llegada.',
+    titulo: "Mis direcciones",
+    mensaje: "Aquí podrás guardar tus lugares frecuentes de salida y llegada.",
   },
   pagos: {
-    titulo: 'Métodos de pago',
-    mensaje: 'Pronto podrás agregar y administrar tus tarjetas.',
+    titulo: "Métodos de pago",
+    mensaje: "Pronto podrás agregar y administrar tus tarjetas.",
   },
   seguridad: {
-    titulo: 'Seguridad',
-    mensaje: 'Pronto podrás cambiar tu contraseña y revisar tus sesiones.',
+    titulo: "Seguridad",
+    mensaje: "Pronto podrás cambiar tu contraseña y revisar tus sesiones.",
   },
   ayuda: {
-    titulo: 'Ayuda y soporte',
+    titulo: "Ayuda y soporte",
     mensaje:
-      'Próximamente encontrarás aquí respuestas a tus preguntas y opciones de soporte.',
+      "Próximamente encontrarás aquí respuestas a tus preguntas y opciones de soporte.",
   },
 };
 
@@ -77,9 +81,9 @@ export default function ProfileScreen() {
 
   // Datos guardados (los que se muestran en el encabezado)
   const [perfil, setPerfil] = useState<Perfil>({
-    nombre: 'Manuela Briones',
-    correo: '',
-    telefono: '',
+    nombre: "Manuela Briones",
+    correo: "",
+    telefono: "",
   });
 
   // Copia temporal que se modifica mientras se edita
@@ -90,7 +94,7 @@ export default function ProfileScreen() {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace('/home' as any);
+      router.replace("/home" as any);
     }
   };
 
@@ -107,22 +111,22 @@ export default function ProfileScreen() {
   const guardarPerfil = () => {
     const faltantes: string[] = [];
 
-    if (!borrador.nombre.trim()) faltantes.push('nombre completo');
-    if (!borrador.correo.trim()) faltantes.push('correo electrónico');
-    if (!borrador.telefono.trim()) faltantes.push('teléfono');
+    if (!borrador.nombre.trim()) faltantes.push("nombre completo");
+    if (!borrador.correo.trim()) faltantes.push("correo electrónico");
+    if (!borrador.telefono.trim()) faltantes.push("teléfono");
 
     if (faltantes.length > 0) {
       Alert.alert(
-        'Campos obligatorios',
-        `Todos los campos son obligatorios. Completa: ${faltantes.join(', ')}.`,
+        "Campos obligatorios",
+        `Todos los campos son obligatorios. Completa: ${faltantes.join(", ")}.`,
       );
       return;
     }
 
     if (!CORREO_VALIDO.test(borrador.correo.trim())) {
       Alert.alert(
-        'Correo no válido',
-        'Escribe un correo electrónico válido, por ejemplo tu@correo.com.',
+        "Correo no válido",
+        "Escribe un correo electrónico válido, por ejemplo tu@correo.com.",
       );
       return;
     }
@@ -135,13 +139,13 @@ export default function ProfileScreen() {
     setEditando(false);
 
     Alert.alert(
-      'Perfil actualizado',
-      'Los cambios se actualizaron en esta pantalla. Más adelante conectaremos el perfil con la base de datos.',
+      "Perfil actualizado",
+      "Los cambios se actualizaron en esta pantalla. Más adelante conectaremos el perfil con la base de datos.",
     );
   };
 
   const abrirOpcion = (id: string) => {
-    if (id === 'editar') {
+    if (id === "editar") {
       abrirEdicion();
       return;
     }
@@ -152,14 +156,14 @@ export default function ProfileScreen() {
 
   const cerrarSesion = () => {
     Alert.alert(
-      'Cerrar sesión',
-      '¿Seguro que quieres volver a la pantalla de bienvenida?',
+      "Cerrar sesión",
+      "¿Seguro que quieres volver a la pantalla de bienvenida?",
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: "Cancelar", style: "cancel" },
         {
-          text: 'Cerrar sesión',
-          style: 'destructive',
-          onPress: () => router.replace('/'),
+          text: "Cerrar sesión",
+          style: "destructive",
+          onPress: () => router.replace("/"),
         },
       ],
     );
@@ -167,7 +171,7 @@ export default function ProfileScreen() {
 
   // Mientras se edita, "Editar perfil" se oculta del menú para no duplicarlo
   const opcionesVisibles = opciones.filter(
-    (opcion) => !(editando && opcion.id === 'editar'),
+    (opcion) => !(editando && opcion.id === "editar"),
   );
 
   return (
@@ -191,6 +195,15 @@ export default function ProfileScreen() {
             >
               <Ionicons name="arrow-back" size={30} color={NAVY} />
             </Pressable>
+
+            <Pressable
+              onPress={() => router.push("/menu" as any)}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Menú adicional"
+            >
+              <Ionicons name="menu" size={30} color={NAVY} />
+            </Pressable>
           </View>
 
           <View style={styles.identity}>
@@ -202,7 +215,7 @@ export default function ProfileScreen() {
 
             <Text style={styles.name}>{perfil.nombre}</Text>
             <Text style={styles.email}>
-              {perfil.correo || 'Agrega tu correo electrónico'}
+              {perfil.correo || "Agrega tu correo electrónico"}
             </Text>
           </View>
 
@@ -357,10 +370,12 @@ const styles = StyleSheet.create({
   /* Encabezado */
   topRow: {
     height: 36,
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   identity: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: -28,
     marginBottom: 22,
   },
@@ -368,28 +383,28 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#EFE7FF',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#EFE7FF",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 14,
   },
   name: {
     color: NAVY,
     fontSize: 26,
-    fontWeight: '800',
-    textAlign: 'center',
+    fontWeight: "800",
+    textAlign: "center",
   },
   email: {
     color: MUTED,
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 8,
   },
 
   /* Estadísticas */
   statsCard: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     borderWidth: 1,
     borderColor: BORDER,
@@ -398,8 +413,8 @@ const styles = StyleSheet.create({
   },
   statWrapper: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   statDivider: {
     width: 1,
@@ -408,23 +423,23 @@ const styles = StyleSheet.create({
   },
   statItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   statNumber: {
     color: NAVY,
     fontSize: 22,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   statLabel: {
     color: MUTED,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 4,
   },
 
   /* Edición */
   editCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 22,
     padding: 18,
     marginBottom: 18,
@@ -434,13 +449,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: NAVY,
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: "800",
     marginBottom: 10,
   },
   label: {
     color: NAVY,
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
     marginTop: 13,
     marginBottom: 7,
   },
@@ -448,8 +463,8 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 13,
     borderWidth: 1,
-    borderColor: '#E0E6F2',
-    backgroundColor: '#FFFFFF',
+    borderColor: "#E0E6F2",
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 14,
     color: NAVY,
     fontSize: 14,
@@ -458,40 +473,40 @@ const styles = StyleSheet.create({
     backgroundColor: PURPLE,
     minHeight: 49,
     borderRadius: 25,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
     marginTop: 22,
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   cancelButton: {
     minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 6,
   },
   cancelButtonText: {
     color: PURPLE,
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: "800",
   },
 
   /* Menú */
   menuCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 22,
     borderWidth: 1,
     borderColor: BORDER,
     paddingHorizontal: 14,
   },
   menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 14,
     minHeight: 54,
   },
@@ -499,11 +514,11 @@ const styles = StyleSheet.create({
     flex: 1,
     color: NAVY,
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   separator: {
     height: 1,
-    backgroundColor: '#EEEDF5',
+    backgroundColor: "#EEEDF5",
   },
   logoutCard: {
     marginTop: 18,
@@ -512,9 +527,9 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   version: {
-    color: '#9AA6BC',
+    color: "#9AA6BC",
     fontSize: 11,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 20,
   },
 });
