@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "temp-carpool",
+    "slug": "temp-carpool",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "edgeToEdgeEnabled": true,
+      "usesCleartextTraffic": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "@react-native-community/datetimepicker"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
