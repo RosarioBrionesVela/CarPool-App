@@ -1,9 +1,12 @@
+import DateTimePicker from '@react-native-community/datetimepicker'; 
+import { API_URL } from '../config';  
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,31 +16,41 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNavigation from '@/components/BottomNavigation';
+import { useAuth } from '../context/AuthContext';
 
 const NAVY = '#17265F';
 const BLUE = '#7897BD';
 const GREEN = '#009F7A';
 const BACKGROUND = '#F2F9FD';
 
+// --- AGREGADO: Lista de estados ---
+const ESTADOS_MEXICO = [
+  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua',
+  'CDMX', 'Coahuila', 'Colima', 'Durango', 'Estado de México', 'Guanajuato', 'Guerrero',
+  'Hidalgo', 'Jalisco', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla',
+  'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas',
+  'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'
+];
+
 type Viaje = {
-  id: string;
+  _id: string;
   origen: string;
   destino: string;
   fecha: string;
   hora: string;
-  llegada: string;
+  llegada?: string;
   conductor: string;
-  calificacion: string;
+  calificacion?: string;
   auto: string;
   precio: number;
   asientos: number;
-  verificado: boolean;
-  color: string;
+  verificado?: boolean;
+  color?: string;
 };
 
 const viajesIniciales: Viaje[] = [
   {
-    id: '1',
+    _id: '1',
     origen: 'Aguascalientes, Ags.',
     destino: 'Querétaro, Qro.',
     fecha: '25 oct. 2026',
@@ -51,47 +64,46 @@ const viajesIniciales: Viaje[] = [
     verificado: true,
     color: '#A8B4C0',
   },
-  {
-    id: '2',
-    origen: 'Aguascalientes, Ags.',
-    destino: 'Querétaro, Qro.',
-    fecha: '25 oct. 2026',
-    hora: '8:00 a. m.',
-    llegada: '11:20 a. m.',
-    conductor: 'Lucía M.',
-    calificacion: '4.9 (18)',
-    auto: 'Honda Civic · Azul',
-    precio: 50,
-    asientos: 2,
-    verificado: true,
-    color: '#2565C5',
-  },
-  {
-    id: '3',
-    origen: 'Aguascalientes, Ags.',
-    destino: 'Guadalajara, Jal.',
-    fecha: '26 oct. 2026',
-    hora: '9:30 a. m.',
-    llegada: '12:00 p. m.',
-    conductor: 'Mariana L.',
-    calificacion: '4.9 (32)',
-    auto: 'Nissan Versa · Blanco',
-    precio: 80,
-    asientos: 2,
-    verificado: false,
-    color: '#D8E0E7',
-  },
 ];
 
 export default function TripsScreen() {
   const router = useRouter();
+  const { usuario } = useAuth(); 
 
-  const [origen, setOrigen] = useState('Aguascalientes, Ags.');
-  const [destino, setDestino] = useState('Querétaro, Qro.');
-  const [fecha, setFecha] = useState('25 oct. 2026');
-  const [hora, setHora] = useState('8:00 a. m.');
+  // --- MODIFICADO: Estados para selectores ---
+  const [origen, setOrigen] = useState('Aguascalientes');
+  const [destino, setDestino] = useState('Querétaro');
+  const [mostrarOrigen, setMostrarOrigen] = useState(false);
+  const [mostrarDestino, setMostrarDestino] = useState(false);
+
+  const [fecha, setFecha] = useState(new Date());
+  const [hora, setHora] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const fechaString = fecha.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const horaString = hora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
+
   const [filtro, setFiltro] = useState('Todos');
   const [busquedaRealizada, setBusquedaRealizada] = useState(false);
+
+  const [viajesBackend, setViajesBackend] = useState<Viaje[]>([]);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/viajes`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Viajes desde MongoDB:', data);
+        setViajesBackend(data);
+        setCargando(false);
+      })
+      .catch((err) => {
+        console.error('Error al conectar con el backend:', err);
+        setCargando(false);
+        setViajesBackend(viajesIniciales);
+      });
+  }, []); 
 
   const normalizar = (texto: string) =>
     texto
@@ -100,7 +112,7 @@ export default function TripsScreen() {
       .toLowerCase()
       .trim();
 
-  let viajesFiltrados = viajesIniciales.filter((viaje) => {
+  let viajesFiltrados = viajesBackend.filter((viaje) => {
     const coincideOrigen =
       !busquedaRealizada ||
       normalizar(viaje.origen).includes(normalizar(origen));
@@ -111,15 +123,15 @@ export default function TripsScreen() {
 
     const coincideFecha =
       !busquedaRealizada ||
-      !fecha.trim() ||
-      normalizar(viaje.fecha).includes(normalizar(fecha));
+      !fechaString.trim() ||
+      normalizar(viaje.fecha).includes(normalizar(fechaString));
 
     return coincideOrigen && coincideDestino && coincideFecha;
   });
 
   if (filtro === 'Conductor verificado') {
     viajesFiltrados = viajesFiltrados.filter(
-      (viaje) => viaje.verificado,
+      (viaje) => viaje.verificado === true,
     );
   }
 
@@ -131,49 +143,50 @@ export default function TripsScreen() {
 
   const buscarViajes = () => {
     if (!origen.trim() || !destino.trim()) {
-      Alert.alert(
-        'Campos obligatorios',
-        'Escribe el origen y el destino.',
-      );
+      Alert.alert('Campos obligatorios', 'Escribe el origen y el destino.');
       return;
     }
-
     if (normalizar(origen) === normalizar(destino)) {
-      Alert.alert(
-        'Revisa tu búsqueda',
-        'El origen y el destino deben ser diferentes.',
-      );
+      Alert.alert('Revisa tu búsqueda', 'El origen y el destino deben ser diferentes.');
       return;
     }
-
     setBusquedaRealizada(true);
   };
 
-  const reservarViaje = (viaje: Viaje) => {
-    Alert.alert(
-      'Reservar viaje',
-      `Conductor: ${viaje.conductor}\nDestino: ${viaje.destino}\nFecha: ${viaje.fecha}\nHora: ${viaje.hora}\nPrecio: $${viaje.precio} por persona`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Reservar',
-          onPress: () =>
-            Alert.alert(
-              'Reserva de demostración',
-              'La reserva todavía no se guarda en una base de datos.',
-            ),
-        },
-      ],
-    );
-  };
+  const reservarViaje = async (viaje: Viaje) => {
+    if (!usuario) {
+      Alert.alert('Inicia sesión', 'Debes iniciar sesión para reservar.');
+      return;
+    }
 
-  const irAViajes = () => {
-    setBusquedaRealizada(false);
-    setFiltro('Todos');
-  };
+    try {
+      const response = await fetch(`${API_URL}/api/reservas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuarioId: usuario.id,
+          viajeId: viaje._id,
+          conductor: viaje.conductor,
+          origen: viaje.origen,
+          destino: viaje.destino,
+          fecha: viaje.fecha,
+          precio: viaje.precio,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert('¡Reserva confirmada!', `Has reservado con ${viaje.conductor}`, [
+          { text: 'Ver mis viajes', onPress: () => router.push('/myTrips') }
+        ]);
+      } else {
+        Alert.alert('Aviso', data.error || 'No se pudo reservar');
+      }
+    } catch (error: any) {
+      Alert.alert('Error de red', `No se pudo conectar: ${error.message}`);
+    }
+  }; 
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -190,88 +203,93 @@ export default function TripsScreen() {
             onPress={() => router.back()}
             accessibilityLabel="Regresar"
           >
-            <Ionicons
-              name="arrow-back"
-              size={25}
-              color={NAVY}
-            />
+            <Ionicons name="arrow-back" size={25} color={NAVY} />
           </Pressable>
-
           <Text style={styles.title}>Buscar viajes</Text>
         </View>
 
+        {/* --- MODIFICADO: Formulario con Selectores --- */}
         <View style={styles.searchForm}>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="location-outline"
-              size={24}
-              color={NAVY}
-            />
-            <TextInput
-              style={styles.input}
-              value={origen}
-              onChangeText={setOrigen}
-              placeholder="Ciudad de origen"
-              placeholderTextColor={BLUE}
-            />
-          </View>
+          <Pressable style={styles.inputContainer} onPress={() => setMostrarOrigen(!mostrarOrigen)}>
+            <Ionicons name="location-outline" size={24} color={NAVY} />
+            <View style={{ flex: 1, paddingLeft: 8 }}>
+              <Text style={{ fontSize: 10, color: BLUE }}>Origen</Text>
+              <Text style={styles.input}>{origen}</Text>
+            </View>
+            <Ionicons name="chevron-down" size={18} color={BLUE} />
+          </Pressable>
+          {mostrarOrigen && (
+            <ScrollView style={styles.dropdown} nestedScrollEnabled>
+              {ESTADOS_MEXICO.map((edo) => (
+                <Pressable key={edo} style={styles.dropdownItem} onPress={() => { setOrigen(edo); setMostrarOrigen(false); }}>
+                  <Text>{edo}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
 
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="location-outline"
-              size={24}
-              color={NAVY}
-            />
-            <TextInput
-              style={styles.input}
-              value={destino}
-              onChangeText={setDestino}
-              placeholder="Ciudad de destino"
-              placeholderTextColor={BLUE}
-            />
-          </View>
+          <Pressable style={styles.inputContainer} onPress={() => setMostrarDestino(!mostrarDestino)}>
+            <Ionicons name="location-outline" size={24} color={NAVY} />
+            <View style={{ flex: 1, paddingLeft: 8 }}>
+              <Text style={{ fontSize: 10, color: BLUE }}>Destino</Text>
+              <Text style={styles.input}>{destino}</Text>
+            </View>
+            <Ionicons name="chevron-down" size={18} color={BLUE} />
+          </Pressable>
+          {mostrarDestino && (
+            <ScrollView style={styles.dropdown} nestedScrollEnabled>
+              {ESTADOS_MEXICO.map((edo) => (
+                <Pressable key={edo} style={styles.dropdownItem} onPress={() => { setDestino(edo); setMostrarDestino(false); }}>
+                  <Text>{edo}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
 
           <View style={styles.dateTimeRow}>
-            <View style={[styles.inputContainer, styles.dateInput]}>
-              <Ionicons
-                name="calendar-outline"
-                size={21}
-                color={NAVY}
-              />
-              <TextInput
-                style={styles.input}
-                value={fecha}
-                onChangeText={setFecha}
-                placeholder="Fecha"
-                placeholderTextColor={BLUE}
-              />
-            </View>
+            <Pressable style={[styles.inputContainer, styles.dateInput]} onPress={() => setShowDatePicker(true)}>
+              <Ionicons name="calendar-outline" size={21} color={NAVY} />
+              <View style={{ flex: 1, paddingLeft: 8 }}>
+                <Text style={{ fontSize: 10, color: BLUE }}>Fecha</Text>
+                <Text style={styles.input}>{fechaString}</Text>
+              </View>
+            </Pressable>
 
-            <View style={[styles.inputContainer, styles.timeInput]}>
-              <Ionicons
-                name="time-outline"
-                size={22}
-                color={NAVY}
-              />
-              <TextInput
-                style={styles.input}
-                value={hora}
-                onChangeText={setHora}
-                placeholder="Hora"
-                placeholderTextColor={BLUE}
-              />
-            </View>
+            <Pressable style={[styles.inputContainer, styles.timeInput]} onPress={() => setShowTimePicker(true)}>
+              <Ionicons name="time-outline" size={22} color={NAVY} />
+              <View style={{ flex: 1, paddingLeft: 8 }}>
+                <Text style={{ fontSize: 10, color: BLUE }}>Hora</Text>
+                <Text style={styles.input}>{horaString}</Text>
+              </View>
+            </Pressable>
           </View>
 
-          <Pressable
-            style={styles.searchButton}
-            onPress={buscarViajes}
-          >
-            <Ionicons
-              name="search-outline"
-              size={19}
-              color="#FFFFFF"
+          {showDatePicker && (
+            <DateTimePicker
+              value={fecha}
+              mode="date"
+              display="default"
+              onChange={(event, date) => {
+                setShowDatePicker(Platform.OS === 'ios');
+                if (date) setFecha(date);
+              }}
             />
+          )}
+
+          {showTimePicker && (
+            <DateTimePicker
+              value={hora}
+              mode="time"
+              display="default"
+              onChange={(event, time) => {
+                setShowTimePicker(Platform.OS === 'ios');
+                if (time) setHora(time);
+              }}
+            />
+          )}
+
+          <Pressable style={styles.searchButton} onPress={buscarViajes}>
+            <Ionicons name="search-outline" size={19} color="#FFFFFF" />
             <Text style={styles.searchButtonText}>Buscar</Text>
           </Pressable>
         </View>
@@ -302,54 +320,41 @@ export default function TripsScreen() {
           ))}
         </ScrollView>
 
-        {viajesFiltrados.length > 0 ? (
+        {cargando ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Cargando viajes desde la base de datos...</Text>
+          </View>
+        ) : viajesFiltrados.length > 0 ? (
           viajesFiltrados.map((viaje) => (
-            <View key={viaje.id} style={styles.tripCard}>
+            <View key={viaje._id} style={styles.tripCard}>
               <View style={styles.tripHeader}>
                 <View style={styles.avatar}>
-                  <Ionicons
-                    name="person"
-                    size={25}
-                    color={NAVY}
-                  />
+                  <Ionicons name="person" size={25} color={NAVY} />
                 </View>
 
                 <View style={styles.driverInfo}>
                   <View style={styles.driverNameRow}>
-                    <Text style={styles.driverName}>
-                      {viaje.conductor}
-                    </Text>
-
+                    <Text style={styles.driverName}>{viaje.conductor}</Text>
                     {viaje.verificado && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={15}
-                        color={GREEN}
-                      />
+                      <Ionicons name="checkmark-circle" size={15} color={GREEN} />
                     )}
                   </View>
 
-                  <View style={styles.ratingRow}>
-                    <Ionicons
-                      name="star"
-                      size={16}
-                      color="#F9B638"
-                    />
-                    <Text style={styles.rating}>
-                      {viaje.calificacion}
-                    </Text>
-                  </View>
+                  {viaje.calificacion && (
+                    <View style={styles.ratingRow}>
+                      <Ionicons name="star" size={16} color="#F9B638" />
+                      <Text style={styles.rating}>{viaje.calificacion}</Text>
+                    </View>
+                  )}
 
-                  <Text style={styles.carName}>
-                    {viaje.auto}
-                  </Text>
+                  <Text style={styles.carName}>{viaje.auto}</Text>
                 </View>
 
                 <View style={styles.carImage}>
                   <Ionicons
                     name="car-sport"
                     size={57}
-                    color={viaje.color}
+                    color={viaje.color || '#A8B4C0'}
                   />
                 </View>
               </View>
@@ -357,7 +362,7 @@ export default function TripsScreen() {
               <View style={styles.tripBottomRow}>
                 <View style={styles.tripTime}>
                   <Text style={styles.timeText}>
-                    {viaje.hora} → {viaje.llegada}
+                    {viaje.hora} {viaje.llegada ? `→ ${viaje.llegada}` : ''}
                   </Text>
 
                   <View style={styles.seatsRow}>
@@ -373,69 +378,48 @@ export default function TripsScreen() {
                 </View>
 
                 <View style={styles.priceInfo}>
-                  <Text style={styles.price}>
-                    ${viaje.precio}
-                  </Text>
-                  <Text style={styles.priceLabel}>
-                    por persona
-                  </Text>
+                  <Text style={styles.price}>${viaje.precio}</Text>
+                  <Text style={styles.priceLabel}>por persona</Text>
                 </View>
               </View>
 
               <Pressable
                 style={styles.reserveButton}
-                onPress={() => router.push('/detail')}
+                onPress={() => reservarViaje(viaje)}
               >
-                <Text style={styles.reserveText}>
-                  Ver viaje y reservar
-                </Text>
-                <Ionicons
-                  name="arrow-forward"
-                  size={17}
-                  color={GREEN}
-                />
+                <Text style={styles.reserveText}>Ver viaje y reservar</Text>
+                <Ionicons name="arrow-forward" size={17} color={GREEN} />
               </Pressable>
             </View>
           ))
         ) : (
           <View style={styles.emptyState}>
-            <Ionicons
-              name="car-outline"
-              size={45}
-              color={BLUE}
-            />
-
-            <Text style={styles.emptyTitle}>
-              No encontramos viajes
-            </Text>
-
+            <Ionicons name="car-outline" size={45} color={BLUE} />
+            <Text style={styles.emptyTitle}>No encontramos viajes</Text>
             <Text style={styles.emptyText}>
               Intenta cambiar el origen, el destino o la fecha.
             </Text>
-
             <Pressable
               style={styles.clearButton}
               onPress={() => {
-                setOrigen('');
-                setDestino('');
-                setFecha('');
+                setOrigen('Aguascalientes');
+                setDestino('Querétaro');
+                setFecha(new Date());
                 setBusquedaRealizada(false);
                 setFiltro('Todos');
               }}
             >
-              <Text style={styles.clearText}>
-                Limpiar búsqueda
-              </Text>
+              <Text style={styles.clearText}>Limpiar búsqueda</Text>
             </Pressable>
           </View>
         )}
       </ScrollView>
 
-      {/* Navegación inferior */}
       <BottomNavigation />
     </SafeAreaView>
   );
 }
+ 
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -671,5 +655,4 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
   },
-  
-});
+}); 

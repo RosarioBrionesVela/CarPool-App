@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,7 +12,9 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DateTimePicker from '@react-native-community/datetimepicker';
 import BottomNavigation from "@/components/BottomNavigation";
+import { useAuth } from "../context/AuthContext";
 
 const PURPLE = "#8B4CF6";
 const NAVY = "#192B68";
@@ -19,16 +22,39 @@ const MUTED = "#7890B5";
 const GREEN = "#00A884";
 const BACKGROUND = "#F7F8FF";
 
+const ESTADOS_MEXICO = [
+  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua',
+  'CDMX', 'Coahuila', 'Colima', 'Durango', 'Estado de México', 'Guanajuato', 'Guerrero',
+  'Hidalgo', 'Jalisco', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla',
+  'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas',
+  'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'
+];
+
 export default function HomeScreen() {
   const router = useRouter();
+  const { usuario } = useAuth();
 
-  const [origen] = useState("Aguascalientes, Ags.");
-  const [destino] = useState("Querétaro, Qro.");
-  const [fecha] = useState("Sáb, 31 Oct 2026");
-  const [hora] = useState("8:00 a.m.");
+  // Estados para Origen y Destino
+  const [origen, setOrigen] = useState("Aguascalientes");
+  const [destino, setDestino] = useState("Querétaro");
+  const [mostrarOrigen, setMostrarOrigen] = useState(false);
+  const [mostrarDestino, setMostrarDestino] = useState(false);
+
+  // Estados para Fecha y Hora (Calendario y Reloj)
+  const [fecha, setFecha] = useState(new Date());
+  const [hora, setHora] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  // Formateadores de texto
+  const fechaString = fecha.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const horaString = hora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   const buscarViajes = () => {
-    router.push("/trips" as any);
+    router.push({
+      pathname: "/trips",
+      params: { origen, destino, fecha: fechaString, hora: horaString }
+    } as any);
   };
 
   const publicarViaje = () => {
@@ -67,7 +93,9 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.greetingContainer}>
-              <Text style={styles.greeting}>Hola, Mariana</Text>
+              <Text style={styles.greeting}>
+                Hola, {usuario?.nombre || 'Invitado'}
+              </Text>
               <Text style={styles.welcomeSubtitle}>
                 ¿Lista para tu próximo viaje?
               </Text>
@@ -98,12 +126,7 @@ export default function HomeScreen() {
           {/* Origen */}
           <Pressable
             style={styles.locationField}
-            onPress={() =>
-              Alert.alert(
-                "Origen",
-                "Después agregaremos la selección de ubicación.",
-              )
-            }
+            onPress={() => setMostrarOrigen(!mostrarOrigen)}
           >
             <Ionicons name="location-outline" size={23} color={PURPLE} />
 
@@ -112,18 +135,22 @@ export default function HomeScreen() {
               <Text style={styles.fieldValue}>{origen}</Text>
             </View>
 
-            <Ionicons name="chevron-forward" size={18} color={MUTED} />
+            <Ionicons name="chevron-down" size={18} color={MUTED} />
           </Pressable>
+          {mostrarOrigen && (
+            <ScrollView style={styles.dropdown} nestedScrollEnabled>
+              {ESTADOS_MEXICO.map((edo) => (
+                <Pressable key={edo} style={styles.dropdownItem} onPress={() => { setOrigen(edo); setMostrarOrigen(false); }}>
+                  <Text>{edo}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
 
           {/* Destino */}
           <Pressable
             style={styles.locationField}
-            onPress={() =>
-              Alert.alert(
-                "Destino",
-                "Después agregaremos la selección de destino.",
-              )
-            }
+            onPress={() => setMostrarDestino(!mostrarDestino)}
           >
             <Ionicons name="location-outline" size={23} color={PURPLE} />
 
@@ -132,45 +159,68 @@ export default function HomeScreen() {
               <Text style={styles.fieldValue}>{destino}</Text>
             </View>
 
-            <Ionicons name="chevron-forward" size={18} color={MUTED} />
+            <Ionicons name="chevron-down" size={18} color={MUTED} />
           </Pressable>
+          {mostrarDestino && (
+            <ScrollView style={styles.dropdown} nestedScrollEnabled>
+              {ESTADOS_MEXICO.map((edo) => (
+                <Pressable key={edo} style={styles.dropdownItem} onPress={() => { setDestino(edo); setMostrarDestino(false); }}>
+                  <Text>{edo}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
 
-          {/* Fecha y hora */}
+          {/* Fecha y hora con Calendario Nativo */}
           <View style={styles.dateTimeRow}>
             <Pressable
               style={styles.dateField}
-              onPress={() =>
-                Alert.alert(
-                  "Fecha del viaje",
-                  "Después agregaremos el calendario para seleccionar la fecha.",
-                )
-              }
+              onPress={() => setShowDatePicker(true)}
             >
               <Ionicons name="calendar-outline" size={22} color={PURPLE} />
 
               <View style={styles.dateTimeText}>
                 <Text style={styles.fieldCaption}>Fecha</Text>
-                <Text style={styles.fieldValue}>{fecha}</Text>
+                <Text style={styles.fieldValue}>{fechaString}</Text>
               </View>
             </Pressable>
 
             <Pressable
               style={styles.timeField}
-              onPress={() =>
-                Alert.alert(
-                  "Hora del viaje",
-                  "Después agregaremos el selector de hora.",
-                )
-              }
+              onPress={() => setShowTimePicker(true)}
             >
               <Ionicons name="time-outline" size={22} color={PURPLE} />
 
               <View style={styles.dateTimeText}>
                 <Text style={styles.fieldCaption}>Hora</Text>
-                <Text style={styles.fieldValue}>{hora}</Text>
+                <Text style={styles.fieldValue}>{horaString}</Text>
               </View>
             </Pressable>
           </View>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={fecha}
+              mode="date"
+              display="default"
+              onChange={(event, date) => {
+                setShowDatePicker(Platform.OS === 'ios');
+                if (date) setFecha(date);
+              }}
+            />
+          )}
+
+          {showTimePicker && (
+            <DateTimePicker
+              value={hora}
+              mode="time"
+              display="default"
+              onChange={(event, time) => {
+                setShowTimePicker(Platform.OS === 'ios');
+                if (time) setHora(time);
+              }}
+            />
+          )}
 
           {/* Buscar viajes */}
           <Pressable
@@ -229,12 +279,10 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      {/* Navegación inferior - ahora se utiliza un componente para la navegación*/}
       <BottomNavigation />
     </SafeAreaView>
   );
-}
-
+} 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -487,4 +535,4 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.8,
   },
-});
+}); 

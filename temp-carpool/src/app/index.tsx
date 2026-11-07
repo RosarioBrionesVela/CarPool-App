@@ -1,12 +1,12 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
-  ImageBackground,
   Pressable,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
+  ImageBackground, // <-- Agregado
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,10 +15,11 @@ export default function WelcomeScreen() {
   const { height } = useWindowDimensions();
 
   return (
-    <ImageBackground
-      source={require('../../assets/images/car-pool-bg.png')}
+    // 🔴 AQUÍ CAMBIAMOS EL VIEW POR IMAGEBACKGROUND
+    <ImageBackground 
+       source={require('../../assets/car-pool-bg.png')}  
       style={styles.background}
-      resizeMode="cover"
+      resizeMode="cover" // Hace que la imagen cubra toda la pantalla
     >
       <StatusBar style="dark" />
 
@@ -62,7 +63,6 @@ export default function WelcomeScreen() {
               </Text>
             </Pressable>
 
-            {/* Acceso temporal para probar la aplicación */}
             <Pressable
               style={({ pressed }) => [
                 styles.guestButton,
@@ -92,13 +92,12 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    backgroundColor: '#B9E4FF',
+    // Le dejamos el color por si la imagen tarda en cargar o tiene transparencias
+    backgroundColor: '#B9E4FF', 
   },
-
   safeArea: {
     flex: 1,
   },
-
   container: {
     flex: 1,
     justifyContent: 'space-between',
@@ -107,16 +106,13 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 4,
   },
-
   topSpace: {
     flex: 1,
   },
-
   bottomContainer: {
     width: '100%',
     gap: 12,
   },
-
   welcomeTitle: {
     color: '#183957',
     fontSize: 25,
@@ -124,15 +120,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 2,
   },
-
-  welcomeDescription: {
-    color: '#526D86',
-    fontSize: 14,
-    lineHeight: 21,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-
   primaryButton: {
     minHeight: 54,
     borderRadius: 28,
@@ -143,13 +130,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 3,
   },
-
   primaryButtonText: {
     color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '700',
   },
-
   secondaryButton: {
     minHeight: 54,
     borderRadius: 28,
@@ -159,31 +144,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   secondaryButtonText: {
     color: '#183957',
     fontSize: 16,
     fontWeight: '700',
   },
-
   guestButton: {
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   guestButtonText: {
     color: '#183957',
     fontSize: 14,
     fontWeight: '700',
     textDecorationLine: 'underline',
   },
-
   buttonPressed: {
     opacity: 0.8,
     transform: [{ scale: 0.98 }],
   },
-
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -192,16 +172,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
     paddingVertical: 8,
   },
-
   dot: {
     width: 7,
     height: 7,
     borderRadius: 4,
     backgroundColor: '#B5C6D5',
   },
-
   activeDot: {
     width: 22,
     backgroundColor: '#00977F',
   },
-});
+}); 

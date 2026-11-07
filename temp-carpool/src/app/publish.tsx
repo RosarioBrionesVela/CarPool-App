@@ -1,9 +1,13 @@
+import { API_URL } from '../config';
+import { useAuth } from '../context/AuthContext'; 
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import {
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -18,96 +22,102 @@ const BLUE = '#7897BD';
 const PURPLE = '#8B55F7';
 const BACKGROUND = '#FFF9FF';
 
+const ESTADOS_MEXICO = [
+  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas', 'Chihuahua',
+  'CDMX', 'Coahuila', 'Colima', 'Durango', 'Estado de México', 'Guanajuato', 'Guerrero',
+  'Hidalgo', 'Jalisco', 'Michoacán', 'Morelos', 'Nayarit', 'Nuevo León', 'Oaxaca', 'Puebla',
+  'Querétaro', 'Quintana Roo', 'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas',
+  'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas'
+];  
+
 export default function PublishScreen() {
   const router = useRouter();
+  const { usuario } = useAuth(); 
 
-  const [tipoUsuario, setTipoUsuario] = useState<'conductor' | 'pasajero'>(
-    'conductor',
-  );
-  const [origen, setOrigen] = useState('Aguascalientes, Ags.');
-  const [destino, setDestino] = useState('Querétaro, Qro.');
-  const [fecha, setFecha] = useState('Sáb, 25 Oct 2026');
-  const [hora, setHora] = useState('8:00 a.m.');
+  const [tipoUsuario, setTipoUsuario] = useState<'conductor' | 'pasajero'>('conductor');
+  
+  // Estados para Origen y Destino
+  const [origen, setOrigen] = useState('Aguascalientes');
+  const [destino, setDestino] = useState('Querétaro');
+  const [mostrarOrigen, setMostrarOrigen] = useState(false);
+  const [mostrarDestino, setMostrarDestino] = useState(false);
+
+  // Estados para Fecha y Hora
+  const [fecha, setFecha] = useState(new Date());
+  const [hora, setHora] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
   const [asientos, setAsientos] = useState(3);
   const [costo, setCosto] = useState('180');
   const [vehiculo, setVehiculo] = useState('Toyota Corolla · Gris');
 
+  // Formateadores de fecha y hora para mostrar en pantalla
+  const fechaString = fecha.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const horaString = hora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
+
   const seleccionarVehiculo = () => {
     Alert.alert('Seleccionar vehículo', 'Elige tu vehículo', [
-      {
-        text: 'Toyota Corolla · Gris',
-        onPress: () => setVehiculo('Toyota Corolla · Gris'),
-      },
-      {
-        text: 'Honda Civic · Azul',
-        onPress: () => setVehiculo('Honda Civic · Azul'),
-      },
-      {
-        text: 'Nissan Versa · Blanco',
-        onPress: () => setVehiculo('Nissan Versa · Blanco'),
-      },
-      {
-        text: 'Cancelar',
-        style: 'cancel',
-      },
+      { text: 'Toyota Corolla · Gris', onPress: () => setVehiculo('Toyota Corolla · Gris') },
+      { text: 'Honda Civic · Azul', onPress: () => setVehiculo('Honda Civic · Azul') },
+      { text: 'Nissan Versa · Blanco', onPress: () => setVehiculo('Nissan Versa · Blanco') },
+      { text: 'Cancelar', style: 'cancel' },
     ]);
   };
 
-  const publicarViaje = () => {
-    if (
-      !origen.trim() ||
-      !destino.trim() ||
-      !fecha.trim() ||
-      !hora.trim() ||
-      !costo.trim()
-    ) {
-      Alert.alert(
-        'Campos incompletos',
-        'Completa todos los campos antes de publicar.',
-      );
+  const publicarViaje = async () => {
+    if (!origen.trim() || !destino.trim() || !costo.trim()) {
+      Alert.alert('Campos incompletos', 'Completa todos los campos antes de publicar.');
       return;
     }
 
-    if (
-      origen.trim().toLowerCase() === destino.trim().toLowerCase()
-    ) {
-      Alert.alert(
-        'Ruta incorrecta',
-        'El origen y el destino deben ser diferentes.',
-      );
+    if (origen.trim().toLowerCase() === destino.trim().toLowerCase()) {
+      Alert.alert('Ruta incorrecta', 'El origen y el destino deben ser diferentes.');
       return;
     }
 
     const precio = Number(costo);
-
     if (!Number.isFinite(precio) || precio <= 0) {
-      Alert.alert(
-        'Costo incorrecto',
-        'Ingresa un costo por persona mayor que cero.',
-      );
+      Alert.alert('Costo incorrecto', 'Ingresa un costo por persona mayor que cero.');
       return;
     }
 
     if (tipoUsuario === 'conductor' && !vehiculo.trim()) {
-      Alert.alert(
-        'Selecciona un vehículo',
-        'Debes elegir el vehículo para tu viaje.',
-      );
+      Alert.alert('Selecciona un vehículo', 'Debes elegir el vehículo para tu viaje.');
       return;
     }
 
-    Alert.alert(
-      '¡Listo!',
-      `Tu viaje de demostración está preparado.\n\nOrigen: ${origen}\nDestino: ${destino}\nFecha: ${fecha}\nHora: ${hora}\nAsientos: ${asientos}\nCosto por persona: $${precio}\nVehículo: ${
-        tipoUsuario === 'conductor' ? vehiculo : 'No aplica'
-      }\n\nTodavía no se ha guardado en una base de datos.`,
-      [
-        {
-          text: 'Aceptar',
-          onPress: () => router.replace('/home'),
-        },
-      ],
-    );
+    try {
+      const response = await fetch(`${API_URL}/api/viajes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          origen: `${origen}, Ags.`,
+          destino: `${destino}, Qro.`,
+          fecha: fechaString,
+          hora: horaString,
+          asientos,
+          precio,
+          conductor: usuario?.nombre || 'Conductor',
+          auto: vehiculo,
+          estado: 'disponible',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert(
+          '¡Viaje publicado!',
+          'Tu viaje ya está visible para que los pasajeros lo reserven.',
+          [{ text: 'Aceptar', onPress: () => router.replace('/home') }]
+        );
+      } else {
+        Alert.alert('Error', data.error || 'No se pudo guardar el viaje.');
+      }
+    } catch (error) {
+      Alert.alert('Error de red', 'No se pudo conectar con el servidor.');
+    }
   };
 
   return (
@@ -125,135 +135,113 @@ export default function PublishScreen() {
           </View>
 
           <View style={styles.headerIllustration}>
-            <Ionicons
-              name="car-sport"
-              size={35}
-              color={PURPLE}
-            />
-            <Ionicons
-              name="sparkles"
-              size={15}
-              color="#E7B5F8"
-              style={styles.sparkle}
-            />
+            <Ionicons name="car-sport" size={35} color={PURPLE} />
+            <Ionicons name="sparkles" size={15} color="#E7B5F8" style={styles.sparkle} />
           </View>
         </View>
 
         <View style={styles.roleSelector}>
           <Pressable
-            style={[
-              styles.roleButton,
-              tipoUsuario === 'conductor' && styles.activeRoleButton,
-            ]}
+            style={[styles.roleButton, tipoUsuario === 'conductor' && styles.activeRoleButton]}
             onPress={() => setTipoUsuario('conductor')}
           >
-            <Text
-              style={[
-                styles.roleText,
-                tipoUsuario === 'conductor' && styles.activeRoleText,
-              ]}
-            >
+            <Text style={[styles.roleText, tipoUsuario === 'conductor' && styles.activeRoleText]}>
               Como conductor
             </Text>
           </Pressable>
 
           <Pressable
-            style={[
-              styles.roleButton,
-              tipoUsuario === 'pasajero' && styles.activeRoleButton,
-            ]}
+            style={[styles.roleButton, tipoUsuario === 'pasajero' && styles.activeRoleButton]}
             onPress={() => setTipoUsuario('pasajero')}
           >
-            <Text
-              style={[
-                styles.roleText,
-                tipoUsuario === 'pasajero' && styles.activeRoleText,
-              ]}
-            >
+            <Text style={[styles.roleText, tipoUsuario === 'pasajero' && styles.activeRoleText]}>
               Como pasajero
             </Text>
           </Pressable>
         </View>
 
         <View style={styles.form}>
-          <View style={styles.inputCard}>
-            <Ionicons
-              name="location-outline"
-              size={18}
-              color={NAVY}
-            />
-
+          {/* SELECTOR DE ORIGEN */}
+          <Pressable style={styles.inputCard} onPress={() => setMostrarOrigen(!mostrarOrigen)}>
+            <Ionicons name="location-outline" size={18} color={NAVY} />
             <View style={styles.inputContent}>
               <Text style={styles.fieldLabel}>Origen</Text>
-              <TextInput
-                style={styles.input}
-                value={origen}
-                onChangeText={setOrigen}
-                placeholder="¿De dónde sales?"
-                placeholderTextColor={BLUE}
-              />
+              <Text style={styles.input}>{origen}</Text>
             </View>
-          </View>
+            <Ionicons name="chevron-down" size={18} color={BLUE} />
+          </Pressable>
+          {mostrarOrigen && (
+            <ScrollView style={styles.dropdown} nestedScrollEnabled>
+              {ESTADOS_MEXICO.map((edo) => (
+                <Pressable key={edo} style={styles.dropdownItem} onPress={() => { setOrigen(edo); setMostrarOrigen(false); }}>
+                  <Text>{edo}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
 
-          <View style={styles.inputCard}>
-            <Ionicons
-              name="location-outline"
-              size={18}
-              color={NAVY}
-            />
-
+          {/* SELECTOR DE DESTINO */}
+          <Pressable style={styles.inputCard} onPress={() => setMostrarDestino(!mostrarDestino)}>
+            <Ionicons name="location-outline" size={18} color={NAVY} />
             <View style={styles.inputContent}>
               <Text style={styles.fieldLabel}>Destino</Text>
-              <TextInput
-                style={styles.input}
-                value={destino}
-                onChangeText={setDestino}
-                placeholder="¿A dónde vas?"
-                placeholderTextColor={BLUE}
-              />
+              <Text style={styles.input}>{destino}</Text>
             </View>
-          </View>
+            <Ionicons name="chevron-down" size={18} color={BLUE} />
+          </Pressable>
+          {mostrarDestino && (
+            <ScrollView style={styles.dropdown} nestedScrollEnabled>
+              {ESTADOS_MEXICO.map((edo) => (
+                <Pressable key={edo} style={styles.dropdownItem} onPress={() => { setDestino(edo); setMostrarDestino(false); }}>
+                  <Text>{edo}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          )}
 
+                  {/* FECHA Y HORA */}
           <View style={styles.dateTimeRow}>
-            <View style={[styles.inputCard, styles.dateCard]}>
-              <Ionicons
-                name="calendar-outline"
-                size={17}
-                color={NAVY}
-              />
-
+            <Pressable style={[styles.inputCard, styles.dateCard]} onPress={() => setShowDatePicker(true)}>
+              <Ionicons name="calendar-outline" size={17} color={NAVY} />
               <View style={styles.inputContent}>
                 <Text style={styles.fieldLabel}>Fecha</Text>
-                <TextInput
-                  style={styles.input}
-                  value={fecha}
-                  onChangeText={setFecha}
-                  placeholder="Fecha del viaje"
-                  placeholderTextColor={BLUE}
-                />
+                <Text style={styles.input}>{fechaString}</Text>
               </View>
-            </View>
+            </Pressable>
 
-            <View style={[styles.inputCard, styles.timeCard]}>
-              <Ionicons
-                name="time-outline"
-                size={18}
-                color={NAVY}
-              />
-
+            <Pressable style={[styles.inputCard, styles.timeCard]} onPress={() => setShowTimePicker(true)}>
+              <Ionicons name="time-outline" size={18} color={NAVY} />
               <View style={styles.inputContent}>
                 <Text style={styles.fieldLabel}>Hora</Text>
-                <TextInput
-                  style={styles.input}
-                  value={hora}
-                  onChangeText={setHora}
-                  placeholder="Hora"
-                  placeholderTextColor={BLUE}
-                />
+                <Text style={styles.input}>{horaString}</Text>
               </View>
-            </View>
+            </Pressable>
           </View>
 
+          {showDatePicker && (
+            <DateTimePicker
+              value={fecha}
+              mode="date"
+              display="default"
+              onChange={(event, date) => {
+                setShowDatePicker(Platform.OS === 'ios');
+                if (date) setFecha(date);
+              }}
+            />
+          )}
+
+          {showTimePicker && (
+            <DateTimePicker
+              value={hora}
+              mode="time"
+              display="default"
+              onChange={(event, time) => {
+                setShowTimePicker(Platform.OS === 'ios');
+                if (time) setHora(time);
+              }}
+            />
+          )} 
+          
           <Text style={styles.sectionLabel}>
             Asientos disponibles
           </Text>
@@ -264,11 +252,7 @@ export default function PublishScreen() {
               onPress={() => setAsientos(Math.max(1, asientos - 1))}
               accessibilityLabel="Disminuir asientos"
             >
-              <Ionicons
-                name="remove"
-                size={20}
-                color={NAVY}
-              />
+              <Ionicons name="remove" size={20} color={NAVY} />
             </Pressable>
 
             <View style={styles.seatCountBox}>
@@ -280,11 +264,7 @@ export default function PublishScreen() {
               onPress={() => setAsientos(Math.min(8, asientos + 1))}
               accessibilityLabel="Aumentar asientos"
             >
-              <Ionicons
-                name="add"
-                size={20}
-                color={NAVY}
-              />
+              <Ionicons name="add" size={20} color={NAVY} />
             </Pressable>
           </View>
 
@@ -319,14 +299,10 @@ export default function PublishScreen() {
                   {vehiculo}
                 </Text>
 
-                <Ionicons
-                  name="chevron-down"
-                  size={18}
-                  color={BLUE}
-                />
+                <Ionicons name="chevron-down" size={18} color={BLUE} />
               </Pressable>
             </>
-          )}
+          )} 
 
           {tipoUsuario === 'pasajero' && (
             <View style={styles.passengerInfo}>
@@ -356,6 +332,7 @@ export default function PublishScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+
 }
 
 const styles = StyleSheet.create({

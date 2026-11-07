@@ -1,3 +1,4 @@
+import { API_URL } from '../config';  
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -14,50 +15,66 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login } = useAuth(); 
 
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
   const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [cargando, setCargando] = useState(false);
 
-  const handleLogin = () => {
-    const correoLimpio = correo.trim().toLowerCase();
+  const validarCorreo = (valor: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor);
+
+  const handleLogin = async () => {
+    const correoLimpio = correo.trim(); 
 
     if (!correoLimpio || !password.trim()) {
-      Alert.alert(
-        'Campos obligatorios',
-        'Ingresa tu correo electrónico y contraseña.',
-      );
+      Alert.alert('Campos obligatorios', 'Ingresa tu correo y contraseña.');
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoLimpio)) {
-      Alert.alert(
-        'Correo no válido',
-        'Ingresa una dirección de correo electrónico válida.',
-      );
+    if (!validarCorreo(correoLimpio)) {
+      Alert.alert('Correo no válido', 'Ingresa una dirección de correo válida.');
       return;
     }
 
-    // Acceso de demostración: todavía no verifica credenciales en un servidor.
-    router.replace('/home');
+    try {
+      setCargando(true);
+      // Aquí estaba tu error, faltaba cerrar bien el fetch
+      const response = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          correo: correoLimpio, 
+          password: password.trim()
+        }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        login(data.usuario); 
+        router.replace('/home');
+      } else {
+        Alert.alert('Error', data.error || 'Credenciales incorrectas');
+      }
+    } catch (error: any) {
+      Alert.alert('Error de red', `No se pudo conectar: ${error.message}`);
+    } finally {
+      setCargando(false);
+    }
   };
 
   const handleGoogle = () => {
     Alert.alert(
       'Acceso con Google',
-      'El acceso con Google necesita configurar la autenticación de Google. Mientras tanto, puedes entrar con el formulario o explorar la aplicación.',
+      'El acceso con Google necesita configurar la autenticación. Mientras tanto, puedes entrar con el formulario o explorar la aplicación.',
       [
-        {
-          text: 'Explorar aplicación',
-          onPress: () => router.replace('/home'),
-        },
-        {
-          text: 'Cerrar',
-          style: 'cancel',
-        },
+        { text: 'Explorar aplicación', onPress: () => router.replace('/home') },
+        { text: 'Cerrar', style: 'cancel' },
       ],
     );
   };
@@ -65,16 +82,10 @@ export default function LoginScreen() {
   const handleApple = () => {
     Alert.alert(
       'Acceso con Apple',
-      'El acceso con Apple necesita configurar la autenticación de Apple. Mientras tanto, puedes entrar con el formulario o explorar la aplicación.',
+      'El acceso con Apple necesita configurar la autenticación. Mientras tanto, puedes entrar con el formulario o explorar la aplicación.',
       [
-        {
-          text: 'Explorar aplicación',
-          onPress: () => router.replace('/home'),
-        },
-        {
-          text: 'Cerrar',
-          style: 'cancel',
-        },
+        { text: 'Explorar aplicación', onPress: () => router.replace('/home') },
+        { text: 'Cerrar', style: 'cancel' },
       ],
     );
   };
@@ -88,11 +99,8 @@ export default function LoginScreen() {
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) {
-      Alert.alert(
-        'Correo no válido',
-        'Escribe una dirección de correo electrónico válida.',
-      );
+    if (!validarCorreo(correo.trim())) {
+      Alert.alert('Correo no válido', 'Escribe una dirección válida.');
       return;
     }
 
@@ -102,7 +110,7 @@ export default function LoginScreen() {
       [{ text: 'Entendido' }],
     );
   };
-
+ 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
@@ -123,11 +131,7 @@ export default function LoginScreen() {
               accessibilityRole="button"
               accessibilityLabel="Regresar"
             >
-              <Ionicons
-                name="chevron-back"
-                size={27}
-                color="#142B57"
-              />
+              <Ionicons name="chevron-back" size={27} color="#142B57" />
             </Pressable>
 
             <View style={styles.topDecoration}>
@@ -139,9 +143,7 @@ export default function LoginScreen() {
 
           <View style={styles.header}>
             <Text style={styles.brand}>CarPool</Text>
-
             <Text style={styles.title}>¡Hola de nuevo!</Text>
-
             <Text style={styles.subtitle}>
               Inicia sesión para continuar tu camino.
             </Text>
@@ -149,7 +151,6 @@ export default function LoginScreen() {
 
           <View style={styles.form}>
             <Text style={styles.label}>Correo electrónico</Text>
-
             <TextInput
               style={styles.input}
               placeholder="tu@correo.com"
@@ -165,7 +166,6 @@ export default function LoginScreen() {
             />
 
             <Text style={styles.label}>Contraseña</Text>
-
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}
@@ -180,10 +180,9 @@ export default function LoginScreen() {
                 onSubmitEditing={handleLogin}
                 accessibilityLabel="Contraseña"
               />
-
               <Pressable
                 style={styles.eyeButton}
-                onPress={() => setMostrarPassword((visible) => !visible)}
+                onPress={() => setMostrarPassword((v) => !v)}
                 accessibilityRole="button"
                 accessibilityLabel={
                   mostrarPassword
@@ -213,12 +212,14 @@ export default function LoginScreen() {
               style={({ pressed }) => [
                 styles.primaryButton,
                 pressed && styles.buttonPressed,
+                cargando && styles.buttonDisabled,
               ]}
               onPress={handleLogin}
+              disabled={cargando}
               accessibilityRole="button"
             >
               <Text style={styles.primaryButtonText}>
-                Iniciar sesión
+                {cargando ? 'Ingresando…' : 'Iniciar sesión'}
               </Text>
             </Pressable>
 
@@ -238,11 +239,7 @@ export default function LoginScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Continuar con Google"
               >
-                <AntDesign
-                  name="google"
-                  size={21}
-                  color="#4285F4"
-                />
+                <AntDesign name="google" size={21} color="#4285F4" />
                 <Text style={styles.socialText}>Google</Text>
               </Pressable>
 
@@ -255,11 +252,7 @@ export default function LoginScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Continuar con Apple"
               >
-                <Ionicons
-                  name="logo-apple"
-                  size={23}
-                  color="#000000"
-                />
+                <Ionicons name="logo-apple" size={23} color="#000000" />
                 <Text style={styles.socialText}>Apple</Text>
               </Pressable>
             </View>
@@ -268,7 +261,6 @@ export default function LoginScreen() {
               <Text style={styles.footerText}>
                 ¿No tienes una cuenta?{' '}
               </Text>
-
               <Pressable
                 onPress={() => router.push('/register')}
                 accessibilityRole="link"
@@ -299,36 +291,26 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F4F7FF',
-  },
-
-  flex: {
-    flex: 1,
-  },
-
+  safeArea: { flex: 1, backgroundColor: '#F4F7FF' },
+  flex: { flex: 1 },
   container: {
     flexGrow: 1,
     paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 16,
   },
-
   topBar: {
     minHeight: 42,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-
   backButton: {
     width: 38,
     height: 38,
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
-
   topDecoration: {
     width: 28,
     height: 35,
@@ -339,14 +321,12 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '35deg' }],
     marginRight: 8,
   },
-
   decorGreen: {
     width: 9,
     height: 9,
     borderRadius: 5,
     backgroundColor: '#00A884',
   },
-
   decorPink: {
     width: 8,
     height: 8,
@@ -354,7 +334,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5A4C7',
     marginTop: 10,
   },
-
   decorOrange: {
     width: 7,
     height: 7,
@@ -362,37 +341,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#F6C66B',
     marginTop: 17,
   },
-
-  header: {
-    marginTop: 28,
-    marginBottom: 28,
-  },
-
+  header: { marginTop: 28, marginBottom: 28 },
   brand: {
     color: '#00A884',
     fontWeight: '800',
     fontSize: 25,
     marginBottom: 20,
   },
-
   title: {
     color: '#142B57',
     fontWeight: '800',
     fontSize: 30,
     lineHeight: 39,
   },
-
   subtitle: {
     color: '#667791',
     fontSize: 15,
     lineHeight: 22,
     marginTop: 5,
   },
-
-  form: {
-    gap: 9,
-  },
-
+  form: { gap: 9 },
   label: {
     color: '#263653',
     fontWeight: '600',
@@ -400,7 +368,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 1,
   },
-
   input: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
@@ -411,7 +378,6 @@ const styles = StyleSheet.create({
     color: '#142B57',
     fontSize: 14,
   },
-
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -421,7 +387,6 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     minHeight: 48,
   },
-
   passwordInput: {
     flex: 1,
     minHeight: 46,
@@ -429,25 +394,14 @@ const styles = StyleSheet.create({
     color: '#142B57',
     fontSize: 14,
   },
-
   eyeButton: {
     width: 43,
     minHeight: 46,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  forgotButton: {
-    alignSelf: 'flex-end',
-    paddingVertical: 5,
-  },
-
-  forgotText: {
-    color: '#7856E8',
-    fontWeight: '600',
-    fontSize: 12,
-  },
-
+  forgotButton: { alignSelf: 'flex-end', paddingVertical: 5 },
+  forgotText: { color: '#7856E8', fontWeight: '600', fontSize: 12 },
   primaryButton: {
     backgroundColor: '#009B7D',
     borderRadius: 26,
@@ -456,17 +410,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 5,
   },
-
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-
-  buttonPressed: {
-    opacity: 0.78,
-  },
-
+  primaryButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  buttonPressed: { opacity: 0.78 },
+  buttonDisabled: { opacity: 0.6 },
   separator: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -474,23 +420,9 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 2,
   },
-
-  separatorLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E0E6F0',
-  },
-
-  separatorText: {
-    color: '#8A98AD',
-    fontSize: 11,
-  },
-
-  socialContainer: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-
+  separatorLine: { flex: 1, height: 1, backgroundColor: '#E0E6F0' },
+  separatorText: { color: '#8A98AD', fontSize: 11 },
+  socialContainer: { flexDirection: 'row', gap: 10 },
   socialButton: {
     flex: 1,
     minHeight: 43,
@@ -503,13 +435,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-
-  socialText: {
-    color: '#263653',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-
+  socialText: { color: '#263653', fontSize: 13, fontWeight: '600' },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -517,30 +443,15 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginTop: 13,
   },
-
-  footerText: {
-    color: '#667791',
-    fontSize: 12,
-  },
-
-  registerLink: {
-    color: '#009B7D',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-
-  guestButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-
+  footerText: { color: '#667791', fontSize: 12 },
+  registerLink: { color: '#009B7D', fontWeight: '700', fontSize: 12 },
+  guestButton: { alignItems: 'center', paddingVertical: 12 },
   guestText: {
     color: '#526D86',
     fontSize: 13,
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
-
   bottomDecoration: {
     height: 42,
     marginTop: 24,
@@ -548,7 +459,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'flex-end',
   },
-
   waveGreen: {
     position: 'absolute',
     bottom: -24,
@@ -560,7 +470,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 65,
     transform: [{ rotate: '-3deg' }],
   },
-
   waveBlue: {
     position: 'absolute',
     bottom: -35,
@@ -572,4 +481,4 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 90,
     transform: [{ rotate: '5deg' }],
   },
-});
+}); 

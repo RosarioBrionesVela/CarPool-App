@@ -4,7 +4,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import {
   Alert,
-  ImageBackground,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -51,24 +50,16 @@ export default function DetailScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* Hero (Reemplazado ImageBackground por View para evitar error de imagen) */}
         <View style={styles.hero}>
-          <ImageBackground
-            source={require('../../assets/images/car-pool-bg.png')}
-            style={styles.heroImage}
-            imageStyle={styles.heroImageStyle}
-            resizeMode="cover"
-          >
+          <View style={styles.heroImage}>
             <View style={styles.heroActions}>
               <Pressable
                 style={styles.roundButton}
                 onPress={() => router.back()}
                 accessibilityLabel="Regresar"
               >
-                <Ionicons
-                  name="arrow-back"
-                  size={22}
-                  color={NAVY}
-                />
+                <Ionicons name="arrow-back" size={22} color={NAVY} />
               </Pressable>
 
               <Pressable
@@ -85,13 +76,9 @@ export default function DetailScreen() {
             </View>
 
             <View style={styles.carOverlay}>
-              <Ionicons
-                name="car-sport"
-                size={100}
-                color="#17265F"
-              />
+              <Ionicons name="car-sport" size={100} color="#17265F" />
             </View>
-          </ImageBackground>
+          </View>
         </View>
 
         <View style={styles.card}>
@@ -123,11 +110,7 @@ export default function DetailScreen() {
               </Text>
             </View>
 
-            <Ionicons
-              name="chevron-forward"
-              size={19}
-              color={BLUE}
-            />
+            <Ionicons name="chevron-forward" size={19} color={BLUE} />
           </Pressable>
 
           <View style={styles.divider} />
@@ -140,15 +123,9 @@ export default function DetailScreen() {
             </View>
 
             <View style={styles.routeTextColumn}>
-              <Text style={styles.routeCity}>
-                Aguascalientes, Ags.
-              </Text>
-
+              <Text style={styles.routeCity}>Aguascalientes, Ags.</Text>
               <View style={styles.routeSpace} />
-
-              <Text style={styles.routeCity}>
-                Querétaro, Qro.
-              </Text>
+              <Text style={styles.routeCity}>Querétaro, Qro.</Text>
             </View>
           </View>
 
@@ -156,7 +133,6 @@ export default function DetailScreen() {
 
           <View style={styles.dateRow}>
             <Ionicons name="time-outline" size={22} color={NAVY} />
-
             <Text style={styles.dateText}>
               Sáb, 25 Oct 2026 · 8:00 a. m. – 11:30 a. m.
             </Text>
@@ -182,48 +158,27 @@ export default function DetailScreen() {
 
           <View style={styles.benefitRow}>
             <View style={styles.benefitIcon}>
-              <Ionicons
-                name="shield-checkmark"
-                size={17}
-                color={GREEN}
-              />
+              <Ionicons name="shield-checkmark" size={17} color={GREEN} />
             </View>
-            <Text style={styles.benefitText}>
-              Conductor verificado
-            </Text>
+            <Text style={styles.benefitText}>Conductor verificado</Text>
           </View>
 
           <View style={styles.benefitRow}>
             <View style={styles.benefitIcon}>
-              <Ionicons
-                name="thumbs-up"
-                size={17}
-                color={GREEN}
-              />
+              <Ionicons name="thumbs-up" size={17} color={GREEN} />
             </View>
-            <Text style={styles.benefitText}>
-              Buenas calificaciones
-            </Text>
+            <Text style={styles.benefitText}>Buenas calificaciones</Text>
           </View>
 
           <View style={styles.benefitRow}>
             <View style={styles.benefitIcon}>
-              <Ionicons
-                name="flash"
-                size={17}
-                color={GREEN}
-              />
+              <Ionicons name="flash" size={17} color={GREEN} />
             </View>
-            <Text style={styles.benefitText}>
-              Respuesta rápida
-            </Text>
+            <Text style={styles.benefitText}>Respuesta rápida</Text>
           </View>
 
           <Pressable
-            style={[
-              styles.reserveButton,
-              reservado && styles.reservedButton,
-            ]}
+            style={[styles.reserveButton, reservado && styles.reservedButton]}
             onPress={reservarAsiento}
           >
             <Text style={styles.reserveButtonText}>
@@ -256,10 +211,7 @@ const styles = StyleSheet.create({
   heroImage: {
     flex: 1,
     justifyContent: 'space-between',
-  },
-  heroImageStyle: {
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
+    backgroundColor: '#B9E8F8', // Color de fondo en lugar de la imagen
   },
   heroActions: {
     flexDirection: 'row',
@@ -448,4 +400,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
   },
-});
+}); 

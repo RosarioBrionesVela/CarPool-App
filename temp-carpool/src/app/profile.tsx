@@ -1,8 +1,10 @@
+import { API_URL } from '../config';   
 import BottomNavigation from "@/components/BottomNavigation";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ComponentRef, useRef, useState } from "react";
+import { ComponentRef, useEffect, useRef, useState } from "react"; 
+import { useAuth } from '../context/AuthContext'; 
 import {
   Alert,
   KeyboardAvoidingView,
@@ -33,8 +35,7 @@ type Perfil = {
   nombre: string;
   correo: string;
   telefono: string;
-};
-
+}; 
 const opciones: Opcion[] = [
   { id: "editar", icono: "create-outline", titulo: "Editar perfil" },
   {
@@ -73,22 +74,36 @@ const proximamente: Record<string, { titulo: string; mensaje: string }> = {
   },
 };
 
+// ... (tus constantes y tipos)
+
 const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ProfileScreen() {
   const router = useRouter();
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
 
-  // Datos guardados (los que se muestran en el encabezado)
+  // 1. Traemos el usuario del contexto global
+  const { usuario, login } = useAuth();
+
+  // 2. Inicializamos con los datos del usuario
   const [perfil, setPerfil] = useState<Perfil>({
-    nombre: "Manuela Briones",
-    correo: "",
-    telefono: "",
+    nombre: usuario?.nombre || "",
+    correo: usuario?.correo || "",
+    telefono: usuario?.telefono || "",
   });
 
-  // Copia temporal que se modifica mientras se edita
+  // Copia temporal para editar
   const [borrador, setBorrador] = useState<Perfil>(perfil);
   const [editando, setEditando] = useState(false);
+
+  // 3. EL TRUCO: Si el usuario cambia (inicia sesión), actualizamos la vista
+  useEffect(() => {
+    setPerfil({
+      nombre: usuario?.nombre || "",
+      correo: usuario?.correo || "",
+      telefono: usuario?.telefono || "",
+    });
+  }, [usuario]);
 
   const regresar = () => {
     if (router.canGoBack()) {
@@ -108,7 +123,8 @@ export default function ProfileScreen() {
     setEditando(false);
   };
 
-  const guardarPerfil = () => {
+  // ... (continúa con tu función guardarPerfil) 
+  const guardarPerfil = async () => {
     const faltantes: string[] = [];
 
     if (!borrador.nombre.trim()) faltantes.push("nombre completo");
@@ -116,33 +132,48 @@ export default function ProfileScreen() {
     if (!borrador.telefono.trim()) faltantes.push("teléfono");
 
     if (faltantes.length > 0) {
-      Alert.alert(
-        "Campos obligatorios",
-        `Todos los campos son obligatorios. Completa: ${faltantes.join(", ")}.`,
-      );
+      Alert.alert("Campos obligatorios", `Completa: ${faltantes.join(", ")}.`);
       return;
     }
 
     if (!CORREO_VALIDO.test(borrador.correo.trim())) {
-      Alert.alert(
-        "Correo no válido",
-        "Escribe un correo electrónico válido, por ejemplo tu@correo.com.",
-      );
+      Alert.alert("Correo no válido", "Escribe un correo electrónico válido.");
       return;
     }
 
-    setPerfil({
-      nombre: borrador.nombre.trim(),
-      correo: borrador.correo.trim(),
-      telefono: borrador.telefono.trim(),
-    });
-    setEditando(false);
+    // Si no hay un usuario logueado (ej. modo invitado), solo actualizamos local
+    if (!usuario || !usuario.id) {
+      setPerfil(borrador);
+      setEditando(false);
+      Alert.alert("Perfil actualizado (Local)", "Inicia sesión para guardar en la nube.");
+      return;
+    }
 
-    Alert.alert(
-      "Perfil actualizado",
-      "Los cambios se actualizaron en esta pantalla. Más adelante conectaremos el perfil con la base de datos.",
-    );
-  };
+    try {
+      const response = await fetch(`${API_URL}/api/usuarios/${usuario.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: borrador.nombre.trim(),
+          telefono: borrador.telefono.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        // Actualizamos el contexto global para que el nombre cambie en Home, etc.
+        login({ ...usuario, nombre: borrador.nombre.trim(), telefono: borrador.telefono.trim() }); 
+        
+        setPerfil(borrador);
+        setEditando(false);
+        Alert.alert("Perfil actualizado", "Tus datos se guardaron correctamente en la base de datos.");
+      } else {
+        const data = await response.json();
+        Alert.alert("Error", data.error || "No se pudo actualizar el perfil.");
+      }
+    } catch (error) {
+      Alert.alert("Error de red", "No se pudo conectar al servidor. Revisa tu IP y que el celular esté en la misma red.");
+    }
+  }; 
 
   const abrirOpcion = (id: string) => {
     if (id === "editar") {
@@ -167,12 +198,11 @@ export default function ProfileScreen() {
         },
       ],
     );
-  };
-
+  }; 
   // Mientras se edita, "Editar perfil" se oculta del menú para no duplicarlo
-  const opcionesVisibles = opciones.filter(
-    (opcion) => !(editando && opcion.id === "editar"),
-  );
+const opcionesVisibles = opciones.filter(
+  (opcion) => !(editando && opcion.id === "editar"),
+); 
 
   return (
     <SafeAreaView style={styles.safeArea}>

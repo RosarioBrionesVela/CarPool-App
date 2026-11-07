@@ -1,7 +1,9 @@
+import { API_URL } from '../config';   
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -20,47 +22,63 @@ export default function RegisterScreen() {
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = () => {
+  const correoRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+// ... dentro del componente
+  const handleRegister = async () => { // <--- Agregamos async
+    if (loading) return;
+
     const nombreLimpio = nombre.trim();
     const correoLimpio = correo.trim().toLowerCase();
 
     if (!nombreLimpio || !correoLimpio || !password.trim()) {
-      Alert.alert(
-        'Campos obligatorios',
-        'Completa tu nombre, correo electrónico y contraseña.',
-      );
+      Alert.alert('Campos obligatorios', 'Completa todos los campos.');
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoLimpio)) {
-      Alert.alert(
-        'Correo no válido',
-        'Escribe una dirección de correo electrónico válida.',
-      );
+      Alert.alert('Correo no válido', 'Escribe una dirección válida.');
       return;
     }
 
     if (password.length < 8) {
-      Alert.alert(
-        'Contraseña demasiado corta',
-        'Tu contraseña debe tener al menos 8 caracteres.',
-      );
+      Alert.alert('Contraseña demasiado corta', 'Mínimo 8 caracteres.');
       return;
     }
 
-    // Registro de prueba: todavía no guarda la cuenta en un servidor.
-    Alert.alert(
-      '¡Bienvenida a CarPool!',
-      `Hola, ${nombreLimpio}. Tu formulario está completo. Puedes comenzar a explorar la aplicación.`,
-      [
-        {
-          text: 'Ir a Inicio',
-          onPress: () => router.replace('/home'),
-        },
-      ],
-    );
-  };
+    try {
+      setLoading(true);
+      
+      // AHORA SÍ LLAMAMOS AL BACKEND
+      const response = await fetch(`${API_URL}/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          nombre: nombreLimpio, 
+          correo: correoLimpio, 
+          password: password.trim() 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert(
+          '¡Bienvenido a CarPool!',
+          `Hola, ${nombreLimpio}. Tu cuenta ha sido creada exitosamente.`,
+          [{ text: 'Ir a Iniciar Sesión', onPress: () => router.replace('/login') }]
+        );
+      } else {
+        Alert.alert('Error', data.error || 'No se pudo crear la cuenta');
+      }
+    } catch (error: any) {
+      Alert.alert('Error de red', `No se pudo conectar: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }; 
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -117,13 +135,16 @@ export default function RegisterScreen() {
               onChangeText={setNombre}
               autoCapitalize="words"
               autoComplete="name"
+              textContentType="name"
               returnKeyType="next"
+              onSubmitEditing={() => correoRef.current?.focus()}
               accessibilityLabel="Nombre completo"
             />
 
             <Text style={styles.label}>Correo electrónico</Text>
 
             <TextInput
+              ref={correoRef}
               style={styles.input}
               placeholder="tu@correo.com"
               placeholderTextColor="#929FB5"
@@ -133,13 +154,16 @@ export default function RegisterScreen() {
               autoCapitalize="none"
               autoCorrect={false}
               autoComplete="email"
+              textContentType="emailAddress"
               returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
               accessibilityLabel="Correo electrónico"
             />
 
             <Text style={styles.label}>Contraseña</Text>
 
             <TextInput
+              ref={passwordRef}
               style={styles.input}
               placeholder="Mínimo 8 caracteres"
               placeholderTextColor="#929FB5"
@@ -148,7 +172,9 @@ export default function RegisterScreen() {
               secureTextEntry
               autoCapitalize="none"
               autoComplete="new-password"
+              textContentType="newPassword"
               returnKeyType="done"
+              onSubmitEditing={handleRegister}
               accessibilityLabel="Contraseña"
             />
 
@@ -156,11 +182,18 @@ export default function RegisterScreen() {
               style={({ pressed }) => [
                 styles.primaryButton,
                 pressed && styles.buttonPressed,
+                loading && styles.buttonPressed,
               ]}
               onPress={handleRegister}
+              disabled={loading}
               accessibilityRole="button"
+              accessibilityLabel="Crear cuenta"
             >
-              <Text style={styles.primaryButtonText}>Crear cuenta</Text>
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Crear cuenta</Text>
+              )}
             </Pressable>
 
             <View style={styles.footer}>

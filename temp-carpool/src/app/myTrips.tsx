@@ -2,8 +2,11 @@ import BottomNavigation from '@/components/BottomNavigation';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { API_URL } from '../config';
+import { useAuth } from '../context/AuthContext'; 
+// Agregamos Alert y ActivityIndicator a los imports de react-native
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const NAVY = '#192B68';
@@ -15,21 +18,24 @@ const BACKGROUND = '#FDFBFA';
 const BORDER = '#ECECF1';
 
 type Pestana = 'Pasados' | 'Reservados';
-type Estado = 'Reservado' | 'Pendiente' | 'Completado';
+// Agregamos 'Confirmado' porque es el estado que manda tu backend
+type Estado = 'Reservado' | 'Pendiente' | 'Completado' | 'Confirmado';
 
 type MiViaje = {
-  id: string;
+  _id: string;        
   origen: string;
   destino: string;
   fecha: string;
   asientos: number;
   precio: number;
-  estado: Estado;
+  estado: string; // Lo dejamos string para que acepte cualquier estado de la BD
+  conductor?: string; 
 };
 
+// ESTOS SON TUS DATOS DE RESPALDO (Si la BD falla o no hay sesión)
 const viajesReservados: MiViaje[] = [
   {
-    id: '1',
+    _id: '1',
     origen: 'Aguascalientes',
     destino: 'Querétaro',
     fecha: 'Sáb, 25 Oct 2026 · 8:00 a. m.',
@@ -38,7 +44,7 @@ const viajesReservados: MiViaje[] = [
     estado: 'Reservado',
   },
   {
-    id: '2',
+    _id: '2',
     origen: 'Querétaro',
     destino: 'CDMX',
     fecha: 'Lun, 27 Oct 2026 · 5:00 p. m.',
@@ -50,7 +56,7 @@ const viajesReservados: MiViaje[] = [
 
 const viajesPasados: MiViaje[] = [
   {
-    id: '3',
+    _id: '3',
     origen: 'CDMX',
     destino: 'Aguascalientes',
     fecha: 'Vie, 10 Oct 2026 · 7:00 a. m.',
@@ -60,7 +66,8 @@ const viajesPasados: MiViaje[] = [
   },
 ];
 
-const ESTADO_STYLES: Record<Estado, { bg: string; text: string }> = {
+const ESTADO_STYLES: Record<string, { bg: string; text: string }> = {
+  Confirmado: { bg: '#B8F0B0', text: '#1E5A2B' },
   Reservado: { bg: '#B8F0B0', text: '#1E5A2B' },
   Pendiente: { bg: '#F9E4A8', text: '#6B4E00' },
   Completado: { bg: '#E3E8F2', text: '#4A5A7A' },
@@ -69,9 +76,110 @@ const ESTADO_STYLES: Record<Estado, { bg: string; text: string }> = {
 export default function MyTripsScreen() {
   const router = useRouter();
   const [pestana, setPestana] = useState<Pestana>('Reservados');
+  
+  const { usuario } = useAuth(); 
+  const [viajes, setViajes] = useState<MiViaje[]>([]);
+  const [cargando, setCargando] = useState(true);
 
-  const viajes = pestana === 'Reservados' ? viajesReservados : viajesPasados;
+  // Función para traer las reservas de la base de datos
+    // Función para traer las reservas de la base de datos
+  const cargarReservas = async () => {
+    if (!usuario || !usuario.id) {
+      setViajes(pestana === 'Reservados' ? viajesReservados : viajesPasados);
+      setCargando(false);
+      return;
+    }
 
+    try {
+      setCargando(true);
+      
+      // 1. Traemos las reservas que hiciste
+      const resReservas = await fetch(`${API_URL}/api/reservas/${usuario.id}`);
+      const dataReservas = await resReservas.json();
+
+      // 2. Traemos todos los viajes para ver si publicaste alguno
+      const resViajes = await fetch(`${API_URL}/api/viajes`);
+      const dataViajes = await resViajes.json();
+      
+      // 3. Filtramos los viajes donde tú eres el conductor
+      const misViajesPublicados = dataViajes.filter((v: any) => v.conductor === usuario.nombre);
+
+      // 4. Juntamos las reservas y tus viajes publicados en una sola lista
+      setViajes([...dataReservas, ...misViajesPublicados]);
+      
+    } catch (error) {
+      console.error("Error cargando reservas", error);
+      setViajes(pestana === 'Reservados' ? viajesReservados : viajesPasados);
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  // Cargar al entrar a la pantalla
+  useEffect(() => {
+    cargarReservas();
+  }, [usuario]); 
+
+  // Función para cancelar reserva (eliminar de la BD)
+  const cancelarReserva = (id: string) => {
+    Alert.alert("Cancelar Reserva", "¿Estás seguro que deseas cancelar este viaje?", [
+      { text: "No", style: "cancel" },
+      { 
+        text: "Sí, cancelar", 
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const response = await fetch(`${API_URL}/api/reservas/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+              setViajes(viajes.filter(v => v._id !== id)); 
+            } else {
+              Alert.alert("Error", "No se pudo cancelar la reserva en el servidor.");
+            }
+          } catch (error) {
+            console.error("Error cancelando", error);
+            Alert.alert("Error", "No se pudo conectar con el servidor.");
+          }
+        }
+      }
+    ]);
+  }; 
+
+  // Función para marcar como terminado (Si es viaje publicado, se completa; si es reserva, se elimina)
+  const terminarViaje = async (id: string) => {
+    Alert.alert("Terminar Viaje", "¿Marcar este viaje como completado? Se moverá a la pestaña 'Pasados'.", [
+      { text: "No", style: "cancel" },
+      { 
+        text: "Sí, terminado", 
+        onPress: async () => {
+          try {
+            // 1. Intentamos completarlo como viaje publicado
+            const response = await fetch(`${API_URL}/api/viajes/${id}/completar`, { method: 'PUT' });
+            
+            if (response.ok) {
+              Alert.alert('Viaje terminado', 'El viaje se ha movido a Pasados.');
+              cargarReservas();
+            } else {
+              // 2. Si falla, es porque era una reserva, así que la cancelamos
+              const resDelete = await fetch(`${API_URL}/api/reservas/${id}`, { method: 'DELETE' });
+              if (resDelete.ok) {
+                Alert.alert('Cancelada', 'Tu reserva ha sido eliminada.');
+                cargarReservas();
+              } else {
+                Alert.alert('Error', 'No se pudo completar ni cancelar.');
+              }
+            }
+          } catch (error) {
+            Alert.alert('Error de red', 'No se pudo conectar.');
+          }
+        }
+      }
+    ]);
+  }; 
+
+  // Filtramos la lista según la pestaña seleccionada
+  const viajesFiltrados = pestana === 'Reservados' 
+    ? viajes.filter(v => v.estado !== 'Completado') 
+    : viajes.filter(v => v.estado === 'Completado'); 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
@@ -103,18 +211,16 @@ export default function MyTripsScreen() {
           })}
         </View>
 
-        {viajes.length > 0 ? (
-          viajes.map((viaje) => {
-            const badge = ESTADO_STYLES[viaje.estado];
+        {cargando ? (
+          <ActivityIndicator size="large" color={PURPLE} style={{ marginTop: 40 }} />
+        ) : viajesFiltrados.length > 0 ? (
+          viajesFiltrados.map((viaje) => {
+            const badge = ESTADO_STYLES[viaje.estado] || ESTADO_STYLES['Pendiente']; 
             return (
-              <View key={viaje.id} style={styles.card}>
+              <View key={viaje._id} style={styles.card}> 
                 <View style={styles.statusIcon}>
                   <Ionicons
-                    name={
-                      viaje.estado === 'Completado'
-                        ? 'checkmark'
-                        : 'hourglass-outline'
-                    }
+                    name={viaje.estado === 'Completado' ? 'checkmark' : 'hourglass-outline'}
                     size={22}
                     color="#FFFFFF"
                   />
@@ -126,10 +232,11 @@ export default function MyTripsScreen() {
                   </Text>
                   <Text style={styles.meta}>{viaje.fecha}</Text>
                   <Text style={styles.meta}>
-                    {viaje.asientos}{' '}
-                    {viaje.asientos === 1 ? 'asiento' : 'asientos'} · $
-                    {viaje.precio}
+                    ${viaje.precio}
                   </Text>
+                  {viaje.conductor && (
+                    <Text style={styles.meta}>Con: {viaje.conductor}</Text>
+                  )}
 
                   <View style={styles.cardFooter}>
                     <View style={[styles.badge, { backgroundColor: badge.bg }]}>
@@ -138,12 +245,20 @@ export default function MyTripsScreen() {
                       </Text>
                     </View>
 
+                    {/* Lógica condicional para el botón: Terminado o Cancelar */}
                     <Pressable
-                      onPress={() => router.push('/detail')}
-                      accessibilityRole="link"
-                      accessibilityLabel={`Ver detalles del viaje a ${viaje.destino}`}
+                      onPress={() => {
+                        if (pestana === 'Reservados') {
+                          terminarViaje(viaje._id);
+                        } else {
+                          cancelarReserva(viaje._id);
+                        }
+                      }}
+                      accessibilityRole="button"
                     >
-                      <Text style={styles.link}>Ver detalles</Text>
+                      <Text style={styles.linkCancel}>
+                        {pestana === 'Reservados' ? 'Terminado' : 'Cancelar'}
+                      </Text>
                     </Pressable>
                   </View>
                 </View>
@@ -155,7 +270,9 @@ export default function MyTripsScreen() {
             <Ionicons name="car-outline" size={45} color={MUTED} />
             <Text style={styles.emptyTitle}>Aún no tienes viajes</Text>
             <Text style={styles.emptyText}>
-              Busca un viaje y reserva tu primer asiento.
+              {pestana === 'Reservados' 
+                ? 'Busca un viaje y reserva tu primer asiento.' 
+                : 'Tus viajes completados aparecerán aquí.'}
             </Text>
           </View>
         )}
@@ -164,8 +281,8 @@ export default function MyTripsScreen() {
       <BottomNavigation />
     </SafeAreaView>
   );
-}
-
+} 
+ 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -256,6 +373,11 @@ const styles = StyleSheet.create({
   },
   link: {
     color: PURPLE,
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+    linkCancel: {
+    color: '#E74C3C', // Rojo
     fontSize: 13.5,
     fontWeight: '800',
   },
